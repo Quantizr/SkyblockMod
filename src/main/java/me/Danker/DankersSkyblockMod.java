@@ -1,5 +1,6 @@
 package me.Danker;
 
+import akka.event.Logging;
 import com.google.gson.JsonObject;
 import me.Danker.commands.*;
 import me.Danker.gui.*;
@@ -10,9 +11,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -69,6 +68,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
+import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
@@ -78,7 +78,7 @@ import java.util.regex.Pattern;
 @Mod(modid = DankersSkyblockMod.MODID, version = DankersSkyblockMod.VERSION, clientSideOnly = true)
 public class DankersSkyblockMod {
     public static final String MODID = "Danker's Skyblock Mod";
-    public static final String VERSION = "1.8.5-beta7";
+    public static final String VERSION = "1.8.5-beta8";
     static double checkItemsNow = 0;
     static double itemsChecked = 0;
     public static Map<String, String> t6Enchants = new HashMap<>();
@@ -97,6 +97,8 @@ public class DankersSkyblockMod {
     static double lastMaddoxTime = 0;
     static KeyBinding[] keyBindings = new KeyBinding[3];
     static boolean usingLabymod = false;
+    static boolean usingOAM = false;
+    static boolean OAMWarning = false;
     public static String guiToOpen = null;
     static boolean foundLivid = false;
     static Entity livid = null;
@@ -318,9 +320,33 @@ public class DankersSkyblockMod {
 
     @EventHandler
     public void postInit(final FMLPostInitializationEvent event) {
-        usingLabymod = Loader.isModLoaded("labymod");
-        System.out.println("LabyMod detection: " + usingLabymod);
+		Package[] packages = Package.getPackages();
+		for(Package p : packages){
+			if(p.getName().startsWith("com.spiderfrog.gadgets") || p.getName().startsWith("com.spiderfrog.oldanimations")){
+				usingOAM = true;
+				break;
+			}
+		}
+		System.out.println("OAM detection: " + usingOAM);
+
+
+    	usingLabymod = Loader.isModLoaded("labymod");
+    	System.out.println("LabyMod detection: " + usingLabymod);
     }
+
+    @SubscribeEvent
+	public void onGuiOpenEvent(GuiOpenEvent event){
+		if(event.gui instanceof GuiMainMenu && usingOAM && !OAMWarning){
+			System.out.println("Gui opened: Instance of GuiMainMenu.");
+			if(!(event.gui instanceof WarningGui)){
+				System.out.println("No instance of WarningGui");
+				event.gui = new WarningGuiRedirect(new WarningGui());
+				OAMWarning = true;
+			}else{
+				System.out.println("Instance of WarningGui");
+			}
+		}
+	}
 
     // Update checker
     @SubscribeEvent
@@ -653,6 +679,16 @@ public class DankersSkyblockMod {
             event.setCanceled(true);
             return;
         }
+        // Ability Cooldown
+        if (!ToggleCommand.cooldownMessages && message.contains("This ability is currently on cooldown for") && message.contains("more second")) {
+          event.setCanceled(true);
+          return;
+        }
+        // Out of mana messages
+        if (!ToggleCommand.manaMessages && message.contains("You do not have enough mana to do this!")) {
+          event.setCanceled(true);
+          return;
+        }
         // Implosion
         if (!ToggleCommand.implosionMessages) {
             if (message.contains("Your Implosion hit ") || message.contains("There are blocks in the way")) {
@@ -660,7 +696,7 @@ public class DankersSkyblockMod {
                 return;
             }
         }
-
+  
         if (ToggleCommand.oruoToggled && Utils.inDungeons) {
         	if (message.contains("What SkyBlock year is it?")) {
                 double currentTime = System.currentTimeMillis() /1000L;

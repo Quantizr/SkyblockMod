@@ -1,0 +1,13 @@
+{
+  "compatibilityLevel": "JAVA_8",
+  "package": "me.Danker.mixin",
+  "mixins": [
+    "MixinBossStatus",
+    "MixinChunk",
+    "MixinModelBlaze",
+    "MixinNetHandlerPlayClient",
+    "MixinPlayerControllerMP",
+    "MixinRenderBlaze"
+  ],
+  "verbose": true
+}

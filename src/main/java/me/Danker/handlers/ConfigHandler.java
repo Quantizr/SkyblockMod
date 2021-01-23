@@ -200,16 +200,28 @@ public class ConfigHandler {
 		if (!hasKey("toggles", "BonzoTimer")) writeBooleanConfig("toggles", "BonzoTimer", false);
 		if (!hasKey("toggles", "BlockBreakingFarms")) writeBooleanConfig("toggles", "BlockBreakingFarms", false);
 		if (!hasKey("toggles", "AutoSkillTracker")) writeBooleanConfig("toggles", "AutoSkillTracker", false);
-		// Puzzle Solvers
+		if (!hasKey("toggles", "BossBarFix")) writeBooleanConfig("toggles", "BossBarFix", false);
+		if (!hasKey("toggles", "HideImplosionParticles")) writeBooleanConfig("toggles", "HideImplosionParticles", false);
+		if (!hasKey("toggles", "ZombieSword")) writeBooleanConfig("toggles", "ZombieSword", false);
+		if (!hasKey("toggles", "AutoAcceptReparty")) writeBooleanConfig("toggles", "AutoAcceptReparty", false);
+		if (!hasKey("toggles", "HiddenJerryAlert")) writeBooleanConfig("toggles", "HiddenJerryAlert", false);
+		if (!hasKey("toggles", "BlockCollectingUnenchanted")) writeBooleanConfig("toggles", "BlockCollectingUnenchanted", false);
+		if (!hasKey("toggles", "BurrowWaypoints")) writeBooleanConfig("toggles", "BurrowWaypoints", false);
+
+		if (!hasKey("toggles", "Puzzler")) writeBooleanConfig("toggles", "Puzzler", false);
+
+		// Dungeon Puzzle Solvers
 		if (!hasKey("toggles", "ThreeManPuzzle")) writeBooleanConfig("toggles", "ThreeManPuzzle", false);
 		if (!hasKey("toggles", "OruoPuzzle")) writeBooleanConfig("toggles", "OruoPuzzle", false);
 		if (!hasKey("toggles", "BlazePuzzle")) writeBooleanConfig("toggles", "BlazePuzzle", false);
+		if (!hasKey("toggles", "OnlyShowCorrectBlaze")) writeBooleanConfig("toggles", "OnlyShowCorrectBlaze", false);
 		if (!hasKey("toggles", "CreeperPuzzle")) writeBooleanConfig("toggles", "CreeperPuzzle", false);
 		if (!hasKey("toggles", "WaterPuzzle")) writeBooleanConfig("toggles", "WaterPuzzle", false);
 		if (!hasKey("toggles", "TicTacToePuzzle")) writeBooleanConfig("toggles", "TicTacToePuzzle", false);
 		if (!hasKey("toggles", "StartsWithTerminal")) writeBooleanConfig("toggles", "StartsWithTerminal", false);
 		if (!hasKey("toggles", "SelectAllTerminal")) writeBooleanConfig("toggles", "SelectAllTerminal", false);
 		if (!hasKey("toggles", "ClickInOrderTerminal")) writeBooleanConfig("toggles", "ClickInOrderTerminal", false);
+		if (!hasKey("toggles", "SimonSays")) writeBooleanConfig("toggles", "SimonSays", false);
 		if (!hasKey("toggles", "BlockWrongTerminalClicks")) writeBooleanConfig("toggles", "BlockWrongTerminalClicks", false);
 		if (!hasKey("toggles", "IgnoreItemFrameOnSeaLanterns")) writeBooleanConfig("toggles", "IgnoreItemFrameOnSeaLanterns", false);
 		// Experiment Solvers
@@ -475,21 +487,34 @@ public class ConfigHandler {
 		ToggleCommand.necronNotificationsToggled = getBoolean("toggles", "NecronNotifications");
 		ToggleCommand.bonzoTimerToggled = getBoolean("toggles", "BonzoTimer");
 		ToggleCommand.blockBreakingFarmsToggled = getBoolean("toggles", "BlockBreakingFarms");
+        ToggleCommand.autoSkillTrackerToggled =  getBoolean("toggles", "AutoSkillTracker");
+		ToggleCommand.bossBarFixToggled = getBoolean("toggles", "BossBarFix");
+		ToggleCommand.hideImplosionParticlesToggled = getBoolean("toggles", "HideImplosionParticles");
+		ToggleCommand.zombieSwordToggled = getBoolean("toggles", "ZombieSword");
+		ToggleCommand.autoAcceptRepartyToggled = getBoolean("toggles", "AutoAcceptReparty");
+		ToggleCommand.hiddenJerryAlertToggled = getBoolean("toggles", "HiddenJerryAlert");
+		ToggleCommand.blockCollectingUnenchantedToggled = getBoolean("toggles", "BlockCollectingUnenchanted");
+		ToggleCommand.burrowWaypointsToggled = getBoolean("toggles", "BurrowWaypoints");
 		ToggleCommand.swapToPickBlockToggled = getBoolean("toggles", "PickBlock");
 		ToggleCommand.flowerWeaponsToggled = getBoolean("toggles", "FlowerWeapons");
-		ToggleCommand.autoSkillTrackerToggled =  getBoolean("toggles", "AutoSkillTracker");
+
+		ToggleCommand.puzzlerToggled = getBoolean("toggles", "Puzzler");
+
 		// Puzzle Solvers
 		ToggleCommand.threeManToggled = getBoolean("toggles", "ThreeManPuzzle");
 		ToggleCommand.oruoToggled = getBoolean("toggles", "OruoPuzzle");
 		ToggleCommand.blazeToggled = getBoolean("toggles", "BlazePuzzle");
+		ToggleCommand.onlyShowCorrectBlazeToggled = getBoolean("toggles", "OnlyShowCorrectBlaze");
 		ToggleCommand.creeperToggled = getBoolean("toggles", "CreeperPuzzle");
 		ToggleCommand.waterToggled = getBoolean("toggles", "WaterPuzzle");
 		ToggleCommand.ticTacToeToggled = getBoolean("toggles", "TicTacToePuzzle");
 		ToggleCommand.startsWithToggled = getBoolean("toggles", "StartsWithTerminal");
 		ToggleCommand.selectAllToggled = getBoolean("toggles", "SelectAllTerminal");
 		ToggleCommand.clickInOrderToggled = getBoolean("toggles", "ClickInOrderTerminal");
+		ToggleCommand.simonToggled = getBoolean("toggles", "SimonSays");
 		ToggleCommand.blockWrongTerminalClicksToggled = getBoolean("toggles", "BlockWrongTerminalClicks");
 		ToggleCommand.itemFrameOnSeaLanternsToggled = getBoolean("toggles", "IgnoreItemFrameOnSeaLanterns");
+
 		// Experiment Solvers
 		ToggleCommand.ultrasequencerToggled = getBoolean("toggles", "UltraSequencer");
 		ToggleCommand.chronomatronToggled = getBoolean("toggles", "Chronomatron");
@@ -712,7 +737,7 @@ public class ConfigHandler {
 		DankersSkyblockMod.CAKE_COLOUR = getString("colors", "cakeDisplay");
 		DankersSkyblockMod.SKILL_TRACKER_COLOUR = getString("colors", "skillTracker");
 		DankersSkyblockMod.TRIVIA_WRONG_ANSWER_COLOUR = getString("colors", "triviaWrongAnswer");
-		DankersSkyblockMod.BONZO_COLOR = getString("colors", "bonzoDisplay");
+		DankersSkyblockMod.BONZO_COLOUR = getString("colors", "bonzoDisplay");
 		DankersSkyblockMod.LOWEST_BLAZE_COLOUR = getInt("colors", "blazeLowest");
 		DankersSkyblockMod.HIGHEST_BLAZE_COLOUR = getInt("colors", "blazeHighest");
 		DankersSkyblockMod.PET_1_TO_9 = getInt("colors", "pet1To9");

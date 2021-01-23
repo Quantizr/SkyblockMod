@@ -45,19 +45,33 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	public static boolean bonzoTimerToggled;
 	public static boolean blockBreakingFarmsToggled;
 	public static boolean autoSkillTrackerToggled;
-	// Puzzle Solvers
+	public static boolean bossBarFixToggled;
+	public static boolean hideImplosionParticlesToggled;
+	public static boolean zombieSwordToggled;
+	public static boolean autoAcceptRepartyToggled;
+	public static boolean hiddenJerryAlertToggled;
+	public static boolean blockCollectingUnenchantedToggled;
+	public static boolean burrowWaypointsToggled;
+
+	public static boolean puzzlerToggled;
+
+	//Dungeon Puzzle Solvers
 	public static boolean threeManToggled;
 	public static boolean oruoToggled;
 	public static boolean blazeToggled;
+	public static boolean onlyShowCorrectBlazeToggled;
 	public static boolean creeperToggled;
 	public static boolean waterToggled;
 	public static boolean ticTacToeToggled;
+
 	// Terminal Helpers
 	public static boolean startsWithToggled;
 	public static boolean selectAllToggled;
 	public static boolean clickInOrderToggled;
+	public static boolean simonToggled;
 	public static boolean blockWrongTerminalClicksToggled;
 	public static boolean itemFrameOnSeaLanternsToggled;
+
 	// Experiments
 	public static boolean ultrasequencerToggled;
 	public static boolean chronomatronToggled;
@@ -73,9 +87,9 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	public String getCommandUsage(ICommandSender arg0) {
 		return "/" + getCommandName() + " <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalert/" + 
 										  "aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/" +
-										  "outlinetext/midasstaffmessages/implosionmessages/healmessages/caketimer/lowhealthnotify/autoskilltracker/" +
-										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/threemanpuzzle/oruopuzzle/blazepuzzle/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
-										  "watchermessage/startswithterminal/selectallterminal/clickinorderterminal/blockwrongterminalclicks/" +
+										  "outlinetext/midasstaffmessages/implosionmessages/healmessages/caketimer/lowhealthnotify/" +
+										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/puzzler/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
+										  "watchermessage/startswithterminal/selectallterminal/clickinorderterminal/simonsays/blockwrongterminalclicks/" +
 										  "itemframeonsealanterns/ultrasequencer/chronomatron/superpairs/hidetooltipsinaddons/pickblock/list>";
 	}
 
@@ -91,11 +105,10 @@ public class ToggleCommand extends CommandBase implements ICommand {
 														  "splitfishing", "chatmaddox", "spiritbearalerts", "aotd", "lividdagger",
 														  "flowerweapons", "sceptremessages", "petcolors", "dungeontimer", "golemalerts",
 														  "expertiselore", "skill50display", "outlinetext", "midasstaffmessages",
-														  "implosionmessages", "healmessages", "caketimer", "lowhealthnotify", "autoskilltracker",
-														  "lividsolver", "stopsalvagestarred", "notifyslayerslain", "necronnotifications",
-														  "bonzotimer", "blockbreakingfarms", "threemanpuzzle", "oruopuzzle", "blazepuzzle",
+														  "implosionmessages", "healmessages", "caketimer", "lowhealthnotify",
+														  "lividsolver", "stopsalvagestarred", "notifyslayerslain", "necronnotifications", "bonzotimer", "blockbreakingfarms", "autoskilltracker", "bossbarfix", "hideimplosionparticles", "zombiesword", "autoacceptreparty", "hiddenjerryalert", "blockcollectingunenchanted", "burrowwaypoints", "puzzler", "threemanpuzzle", "oruopuzzle", "blazepuzzle", "onlyshowcorrectblaze",
 														  "creeperpuzzle", "waterpuzzle", "tictactoepuzzle", "watchermessage", "startswithterminal",
-														  "selectallterminal", "clickinorderterminal", "blockwrongterminalclicks", "itemframeonsealanterns", "ultrasequencer",
+														  "selectallterminal", "clickinorderterminal", "blockwrongterminalclicks", "simonsays", "itemframeonsealanterns", "ultrasequencer",
 														  "chronomatron", "superpairs", "hidetooltipsinaddons", "pickblock", "list");
 		}
 		return null;
@@ -250,16 +263,56 @@ public class ToggleCommand extends CommandBase implements ICommand {
 			case "bonzotimer":
 				bonzoTimerToggled = !bonzoTimerToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "BonzoTimer", bonzoTimerToggled);
-				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Bonzo's Mask timer has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + necronNotificationsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Bonzo's Mask timer has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + bonzoTimerToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "blockbreakingfarms":
 				blockBreakingFarmsToggled = !blockBreakingFarmsToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "BlockBreakingFarms", blockBreakingFarmsToggled);
-				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Prevent breaking farms has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + necronNotificationsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Prevent breaking farms has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + blockBreakingFarmsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 			case "autoskilltracker":
 				autoSkillTrackerToggled = !autoSkillTrackerToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "AutoSkillTracker", autoSkillTrackerToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Auto start/stop skill tracker has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + autoSkillTrackerToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "bossbarfix":
+				bossBarFixToggled = !bossBarFixToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "BossBarFix", bossBarFixToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Bossbar fix has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + bossBarFixToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "hideimplosionparticles":
+				hideImplosionParticlesToggled = !hideImplosionParticlesToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "HideImplosionParticles", hideImplosionParticlesToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Hide Implosion Particles has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + hideImplosionParticlesToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "zombiesword":
+				zombieSwordToggled = !zombieSwordToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "ZombieSword", zombieSwordToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Block Useless Zombie Sword has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + zombieSwordToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "autoacceptreparty":
+				autoAcceptRepartyToggled = !autoAcceptRepartyToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "AutoAcceptReparty", autoAcceptRepartyToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Auto Accept Reparty has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + autoAcceptRepartyToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "hiddenjerryalert":
+				hiddenJerryAlertToggled = !hiddenJerryAlertToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "HiddenJerryAlert", hiddenJerryAlertToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Hidden Jerry Alert has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + hiddenJerryAlertToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "blockcollectingunenchanted":
+				blockCollectingUnenchantedToggled = !blockCollectingUnenchantedToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "BlockCollectingUnenchanted", blockCollectingUnenchantedToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Block collecting unenchanted items has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + blockCollectingUnenchantedToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "burrowwaypoints":
+				burrowWaypointsToggled = !burrowWaypointsToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "BurrowWaypoints", burrowWaypointsToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Griffin Burrow Waypoints has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + burrowWaypointsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "puzzler":
+				puzzlerToggled = !puzzlerToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "Puzzler", puzzlerToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Puzzler solver has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + puzzlerToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "threemanpuzzle":
 				threeManToggled = !threeManToggled;
@@ -275,6 +328,11 @@ public class ToggleCommand extends CommandBase implements ICommand {
 				blazeToggled = !blazeToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "BlazePuzzle", blazeToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Blaze puzzle solver has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + blazeToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "onlyshowcorrectblaze":
+				onlyShowCorrectBlazeToggled = !onlyShowCorrectBlazeToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "OnlyShowCorrectBlaze", onlyShowCorrectBlazeToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Only show correct blaze has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + onlyShowCorrectBlazeToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "creeperpuzzle":
 				creeperToggled = !creeperToggled;
@@ -309,7 +367,12 @@ public class ToggleCommand extends CommandBase implements ICommand {
 			case "clickinorderterminal":
 				clickInOrderToggled = !clickInOrderToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "ClickInOrderTerminal", clickInOrderToggled);
-				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Click in order terminal helper has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + selectAllToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Click in order terminal helper has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + clickInOrderToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "simonsays":
+				simonToggled = !simonToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "SimonSays", simonToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Simon says helper has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + simonToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "blockwrongterminalclicks":
 				blockWrongTerminalClicksToggled = !blockWrongTerminalClicksToggled;
@@ -370,17 +433,34 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Outline displayed text: " + DankersSkyblockMod.VALUE_COLOUR + outlineTextToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Cake timer: " + DankersSkyblockMod.VALUE_COLOUR + cakeTimerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Low health notify: " + DankersSkyblockMod.VALUE_COLOUR + lowHealthNotifyToggled + "\n" +
-															DankersSkyblockMod.TYPE_COLOUR + " Auto start/stop skill tracker: " + DankersSkyblockMod.VALUE_COLOUR + autoSkillTrackerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Livid solver: " + DankersSkyblockMod.VALUE_COLOUR + lividSolverToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Stop Salvaging Starred Items: " + DankersSkyblockMod.VALUE_COLOUR + stopSalvageStarredToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Necron Notifications: " + DankersSkyblockMod.VALUE_COLOUR + necronNotificationsToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Notify Slayer Slain: " + DankersSkyblockMod.VALUE_COLOUR + notifySlayerSlainToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Prevent Breaking Farms: " + DankersSkyblockMod.VALUE_COLOUR + blockBreakingFarmsToggled + "\n" +
+                                                            DankersSkyblockMod.TYPE_COLOUR + " Auto start/stop skill tracker: " + DankersSkyblockMod.VALUE_COLOUR + autoSkillTrackerToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Bonzo's Mask Timer: " + DankersSkyblockMod.VALUE_COLOUR + bonzoTimerToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Boss Bar Fix: " + DankersSkyblockMod.VALUE_COLOUR + bossBarFixToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Hide Implosion Particles: " + DankersSkyblockMod.VALUE_COLOUR + hideImplosionParticlesToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Block Useless Zombie Sword Use: " + DankersSkyblockMod.VALUE_COLOUR + zombieSwordToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Auto Accept Reparty: " + DankersSkyblockMod.VALUE_COLOUR + autoAcceptRepartyToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Hidden Jerry Alert: " + DankersSkyblockMod.VALUE_COLOUR + hiddenJerryAlertToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Block Collecting Unenchanted Items: " + DankersSkyblockMod.VALUE_COLOUR + blockCollectingUnenchantedToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Griffin Burrow Waypoints: " + DankersSkyblockMod.VALUE_COLOUR + burrowWaypointsToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Puzzler Solver: " + DankersSkyblockMod.VALUE_COLOUR + puzzlerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Three man puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + threeManToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Oruo trivia solver: " + DankersSkyblockMod.VALUE_COLOUR + oruoToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Blaze puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + blazeToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Only show correct blaze: " + DankersSkyblockMod.VALUE_COLOUR + onlyShowCorrectBlazeToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Creeper puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + creeperToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Water puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + waterToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Tic tac toe puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + ticTacToeToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Watcher ready message: " + DankersSkyblockMod.VALUE_COLOUR + watcherReadyToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Starts with letter terminal solver: " + DankersSkyblockMod.VALUE_COLOUR + startsWithToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Select all color items terminal solver: " + DankersSkyblockMod.VALUE_COLOUR + selectAllToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Click in order terminal helper: " + DankersSkyblockMod.VALUE_COLOUR + clickInOrderToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Simon Says helper: " + DankersSkyblockMod.VALUE_COLOUR + simonToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Block Wrong Terminal Clicks: " + DankersSkyblockMod.VALUE_COLOUR + blockWrongTerminalClicksToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Ignore item frames on sea lanterns: " + DankersSkyblockMod.VALUE_COLOUR + itemFrameOnSeaLanternsToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Ultra sequencer solver: " + DankersSkyblockMod.VALUE_COLOUR + ultrasequencerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Chronomatron solver: " + DankersSkyblockMod.VALUE_COLOUR + chronomatronToggled + "\n" +

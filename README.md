@@ -14,15 +14,19 @@ Discord Server: https://discord.gg/QsEkNQS
 - Guild party desktop notifications
 - Coordinate and angle display
 - Golden T10/T6/T4 enchant display
+- Keybind to cycle Bonemerangs
 - Block AOTD ability
 - Block Livid Dagger ability
+- Block Zombie Sword ability when at full health
 - Block placing Flower of Truth/Spirit Sceptre
+- Block breaking "farm blocks"
 - Disable Spirit Sceptre messages
 - Disable Midas Staff messages
 - Disable Implosion messages
 - Disable heal messages
 - Disable ability cooldown messages
 - Disable out of mana messages
+- Hide Implosion particles
 - Slayer item tracker
 - RNGesus drop alerts
 - Click anywhere on-screen to open Maddox
@@ -30,21 +34,31 @@ Discord Server: https://discord.gg/QsEkNQS
 - Block starting other slayer quests
 - Fishing, jerry fishing, fishing festival, spooky fishing trackers
 - Expertise kills in fishing rod lore
-- Catacombs trackers
+- Puzzler solver
 - Dungeons puzzle solver (Riddle, trivia, blaze, creeper, water, tic tac toe)
+- Catacombs trackers
+- Dungeons regular ability keybind
 - Dungeons timer (watcher, boss, deaths, and puzzle fails)
 - Watcher ready message
-- Catacombs F7 Stage 3 solvers (Starts with letter, select all colour, ignore arrows on sea lanterns)
+- Low health alert in dungeons
+- Bonzo's Mask Cooldown Timer
+- Catacombs F7 Stage 3 solvers (Starts with letter, select all colour, click in order, simon says, ignore arrows on sea lanterns)
 - Find correct Livid (with graphic display of HP)
+- Notify when Necron is stunned
 - Experimentation solvers (Ultrasequencer, Chronomatron, Superpairs)
 - Hide tooltips in experiment addons
 - Pet background colors based on level
 - Golem spawning alerts
+- Hidden Jerry spawn alerts
 - Skill xp/hour tracker
 - Show total skill xp instead of progress to next level
 - Show time until century cakes run out
 - Mythological event (Diana) tracker
-- Low health alert in dungeons
+- Griffin burrow waypoints
+- Spirit Boots fix
+- Boss Bar fix
+- Block picking up un-enchanted items in minions
+- Reparty Command and Auto Rejoin Reparty
 - API commands
 - Update checker
 - Reparty command
@@ -52,7 +66,7 @@ Discord Server: https://discord.gg/QsEkNQS
 ## Commands
 - /dhelp - Returns this message in-game.
 - /dsm - Opens the GUI for Danker's Skyblock Mod.
-- /toggle <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalerts/aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/outlinetext/midasstaffmessages/implosionmessages/healmessages/cooldownmessages/manamessages/caketimer/lowhealthnotify/lividsolver/stopsalvagestarred/notifyslayerslain/threemanpuzzle/oruopuzzle/blazepuzzle/creeperpuzzle/waterpuzzle/tictactoepuzzle/watchermessage/startswithterminal/selectallterminal/clickinorderterminal/blockwrongterminalclicks/itemframeonsealanterns/ultrasequencer/chronomatron/superpairs/hidetooltipsinaddons/pickblock/list> - Toggles features. /toggle list returns values of every toggle.
+- /toggle <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalerts/aotd/lividdagger/flowerweapons/sceptremessages/midasstaffmessages/implosionmessages/healmessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/outlinetext/midasstaffmessages/implosionmessages/healmessages/cooldownmessages/manamessages/caketimer/lowhealthnotify/lividsolver/stopsalvagestarred/notifyslayerslain/threemanpuzzle/oruopuzzle/blazepuzzle/creeperpuzzle/waterpuzzle/tictactoepuzzle/watchermessage/startswithterminal/selectallterminal/clickinorderterminal/blockwrongterminalclicks/itemframeonsealanterns/ultrasequencer/chronomatron/superpairs/hidetooltipsinaddons/pickblock/list> - Toggles features. /toggle list returns values of every toggle.
 - /setkey <key> - Sets API key.
 - /getkey - Returns key set with /setkey and copies it to your clipboard.
 - /loot <zombie/spider/wolf/fishing/catacombs> [winter/spooky/f(1-7)/session] - Returns loot received from slayer quests or fishing stats. /loot fishing winter returns winter sea creatures instead.

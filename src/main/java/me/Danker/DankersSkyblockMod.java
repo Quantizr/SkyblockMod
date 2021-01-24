@@ -81,7 +81,6 @@ import java.util.regex.Pattern;
 public class DankersSkyblockMod {
     public static final String MODID = "Danker's Skyblock Mod";
     public static final String VERSION = "1.8.5-beta8";
-    public static final String VERSION = "1.8.5-beta8";
 
     Minecraft mc = Minecraft.getMinecraft();
 

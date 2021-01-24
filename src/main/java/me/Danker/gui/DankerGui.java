@@ -212,19 +212,19 @@ public class DankerGui extends GuiScreen {
 				this.buttonList.add(backPage);
 				break;
 			case 6:
-        this.buttonList.add(necronNotifications);
+        		this.buttonList.add(necronNotifications);
 				this.buttonList.add(bonzoTimer);
 				this.buttonList.add(blockBreakingFarms);
 				this.buttonList.add(autoSkillTracker);
 				this.buttonList.add(bossBarFix);
 				this.buttonList.add(hideImplosionParticles);
 				this.buttonList.add(zombieSword);
-				this.buttonList.add(autoAcceptReparty);
-				this.buttonList.add(hiddenJerryAlert);
 				this.buttonList.add(nextPage);
 				this.buttonList.add(backPage);
 				break;
 			case 7:
+				this.buttonList.add(autoAcceptReparty);
+				this.buttonList.add(hiddenJerryAlert);
 				this.buttonList.add(blockCollectingUnenchanted);
 				this.buttonList.add(burrowWaypoints);
 				this.buttonList.add(puzzler);

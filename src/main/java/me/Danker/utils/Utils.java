@@ -10,6 +10,8 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.inventory.GuiChest;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -22,11 +24,13 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.util.*;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -118,13 +122,11 @@ public class Utils {
 	}
 
 	public static int getLowestBin(String sbItemID) {
-		if (System.currentTimeMillis() - lastAPITime >= 60000) {
-			//If json hasn't been updated for over a minute since last chest opened, get a new copy from server
+		if (System.currentTimeMillis() - lastAPITime >= 60000) { //If json hasn't been updated for over a minute, get a new copy from server
 			lowestBINJson = APIHandler.getResponse("http://dsm.quantizr.repl.co/lowestbin.json");
 		}
 		try {
 			int lowestBin = lowestBINJson.get(sbItemID).getAsInt();
-			//Reset timer after an item value is successfully queried, otherwise immediately allow for new query
 			lastAPITime = System.currentTimeMillis();
 			return lowestBin;
 		} catch (Exception e) {
@@ -190,7 +192,7 @@ public class Utils {
 		}
 	}
 
-	public static boolean isOnHypixel () {
+	public static boolean isOnHypixel() {
 		Minecraft mc = Minecraft.getMinecraft();
 		if (mc != null && mc.theWorld != null && !mc.isSingleplayer()) {
 			return mc.getCurrentServerData().serverIP.toLowerCase().contains("hypixel");
@@ -226,7 +228,7 @@ public class Utils {
 		}
 		inDungeons = false;
 	}
-	
+
 	public static String capitalizeString(String string) {
 		String[] words = string.split("_");
 		
@@ -343,6 +345,35 @@ public class Utils {
 	}
 
 	//Taken from SkyblockAddons
+	public static NBTTagCompound getExtraAttributes(ItemStack item) {
+		if (item == null || !item.hasTagCompound()) {
+			return null;
+		}
+
+		return item.getSubCompound("ExtraAttributes", false);
+	}
+
+	public static String getSkyBlockItemID(ItemStack item) {
+		final int NBT_INTEGER = 3;
+		final int NBT_STRING = 8;
+		final int NBT_LIST = 9;
+		final int NBT_COMPOUND = 10;
+		if (item == null) {
+			return null;
+		}
+
+		NBTTagCompound extraAttributes = getExtraAttributes(item);
+		if (extraAttributes == null) {
+			return null;
+		}
+
+		if (!extraAttributes.hasKey("id", NBT_STRING)) {
+			return null;
+		}
+
+		return extraAttributes.getString("id");
+	}
+
 	public static List<String> getItemLore(ItemStack itemStack) {
 		final int NBT_INTEGER = 3;
 		final int NBT_STRING = 8;
@@ -367,8 +398,26 @@ public class Utils {
 		return Collections.emptyList();
 	}
 
+	public static void renderItem(ItemStack item, float x, float y, float z) {
+
+		GlStateManager.enableRescaleNormal();
+		RenderHelper.enableGUIStandardItemLighting();
+		GlStateManager.enableDepth();
+
+		GlStateManager.pushMatrix();
+		GlStateManager.translate(x, y, z);
+		Minecraft.getMinecraft().getRenderItem().renderItemIntoGUI(item, 0, 0);
+		GlStateManager.popMatrix();
+
+		GlStateManager.disableDepth();
+		RenderHelper.disableStandardItemLighting();
+		GlStateManager.disableRescaleNormal();
+	}
+
+	//End taken from SBA
+
 	public static boolean hasRightClickAbility(ItemStack itemStack) {
-		return Utils.getItemLore(itemStack).stream().anyMatch(line->{
+		return Utils.getItemLore(itemStack).stream().anyMatch(line -> {
 			String stripped = StringUtils.stripControlCodes(line);
 			return stripped.startsWith("Item Ability:") && stripped.endsWith("RIGHT CLICK");
 		});
@@ -562,22 +611,6 @@ public class Utils {
 		GlStateManager.popMatrix();
 	}
 
-	public static void renderItem(ItemStack item, float x, float y, float z) {
-
-		GlStateManager.enableRescaleNormal();
-		RenderHelper.enableGUIStandardItemLighting();
-		GlStateManager.enableDepth();
-
-		GlStateManager.pushMatrix();
-		GlStateManager.translate(x, y, z);
-		Minecraft.getMinecraft().getRenderItem().renderItemIntoGUI(item, 0, 0);
-		GlStateManager.popMatrix();
-
-		GlStateManager.disableDepth();
-		RenderHelper.disableStandardItemLighting();
-		GlStateManager.disableRescaleNormal();
-	}
-	
 	public static BlockPos getFirstBlockPosAfterVectors(Minecraft mc, Vec3 pos1, Vec3 pos2, int strength, int distance) {
 		double x = pos2.xCoord - pos1.xCoord;
 		double y = pos2.yCoord - pos1.yCoord;
@@ -632,5 +665,9 @@ public class Utils {
 				return null;
 		}
 	}
-	
+
+	public static Slot getSlotUnderMouse(GuiContainer gui) {
+    	return ObfuscationReflectionHelper.getPrivateValue(GuiContainer.class, gui, "theSlot", "field_147006_u");
+	}
+
 }

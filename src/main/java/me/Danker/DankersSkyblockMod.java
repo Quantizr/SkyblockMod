@@ -3532,7 +3532,8 @@ public class DankersSkyblockMod {
 
     @SubscribeEvent
     public void onWorldRender(RenderWorldLastEvent event) {
-        if (ToggleCommand.monolithWaypointsToggled && LocationHandler.getLocation().equals("mining_3")) {
+        if (ToggleCommand.monolithWaypointsToggled && LocationHandler.getLocation() != null) {
+            if (!LocationHandler.getLocation().equals("mining_3")) return;
             DarkMonolithUtils.drawWaypoint(DarkMonolithUtils.findMonolith(), event.partialTicks);
         }
         if (ToggleCommand.puzzlerToggled && puzzlerSolution != null && !puzzlerSolution.equals(new BlockPos(181, 195, 135))) {

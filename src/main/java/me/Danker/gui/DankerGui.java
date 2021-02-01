@@ -141,7 +141,7 @@ public class DankerGui extends GuiScreen {
 		rngesusAlert = new GuiButton(0, width / 2 - 100, (int) (height * 0.6), "RNGesus Alerts: " + Utils.getColouredBoolean(ToggleCommand.rngesusAlerts));
 		splitFishing = new GuiButton(0, width / 2 - 100, (int) (height * 0.7), "Split Fishing Display: " + Utils.getColouredBoolean(ToggleCommand.splitFishing));
 		// Page 5
-    	lowHealthNotify = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Low Health Notifications: " + Utils.getColouredBoolean(ToggleCommand.lowHealthNotifyToggled));
+		lowHealthNotify = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Low Health Notifications: " + Utils.getColouredBoolean(ToggleCommand.lowHealthNotifyToggled));
 		lividSolver = new GuiButton(0, width / 2 - 100, (int) (height * 0.2), "Find Correct Livid: " + Utils.getColouredBoolean(ToggleCommand.lividSolverToggled));
 		dungeonTimer = new GuiButton(0, width / 2 - 100, (int) (height * 0.3), "Display Dungeon Timers: " + Utils.getColouredBoolean(ToggleCommand.dungeonTimerToggled));
 		stopSalvageStarred = new GuiButton(0, width / 2 - 100, (int) (height * 0.4), "Stop Salvaging Starred Items: " + Utils.getColouredBoolean(ToggleCommand.stopSalvageStarredToggled));
@@ -152,7 +152,7 @@ public class DankerGui extends GuiScreen {
 		necronNotifications = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Necron Phase Notifications: " + Utils.getColouredBoolean(ToggleCommand.necronNotificationsToggled));
 		bonzoTimer = new GuiButton(0, width / 2 - 100, (int) (height * 0.2), "Bonzo's Mask Timer: " + Utils.getColouredBoolean(ToggleCommand.bonzoTimerToggled));
 		blockBreakingFarms = new GuiButton(0, width / 2 - 100, (int) (height * 0.3), "Prevent Breaking Farms: " + Utils.getColouredBoolean(ToggleCommand.blockBreakingFarmsToggled));
-    	autoSkillTracker = new GuiButton(0, width / 2 - 100, (int) (height * 0.4), "Auto Start/Stop Skill Tracker: " + Utils.getColouredBoolean(ToggleCommand.autoSkillTrackerToggled));
+		autoSkillTracker = new GuiButton(0, width / 2 - 100, (int) (height * 0.4), "Auto Start/Stop Skill Tracker: " + Utils.getColouredBoolean(ToggleCommand.autoSkillTrackerToggled));
 		bossBarFix = new GuiButton(0, width / 2 - 100, (int) (height * 0.5), "Boss Bar Fix: " + Utils.getColouredBoolean(ToggleCommand.bossBarFixToggled));
 		hideImplosionParticles = new GuiButton(0, width / 2 - 100, (int) (height * 0.6), "Hide Implosion Particles: " + Utils.getColouredBoolean(ToggleCommand.hideImplosionParticlesToggled));
 		zombieSword = new GuiButton(0, width / 2 - 100, (int) (height * 0.7), "Block Useless Zombie Sword Use: " + Utils.getColouredBoolean(ToggleCommand.zombieSwordToggled));
@@ -245,11 +245,13 @@ public class DankerGui extends GuiScreen {
 				this.buttonList.add(soulEaterLore);
 				this.buttonList.add(nextPage);
 				this.buttonList.add(backPage);
+				break;
 			case 8:
 				this.buttonList.add(autoAcceptReparty);
 				this.buttonList.add(hiddenJerryAlert);
 				this.buttonList.add(monolithWaypoints);
 				this.buttonList.add(backPage);
+				break;
 		}
 		
 		this.buttonList.add(githubLink);

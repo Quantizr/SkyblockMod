@@ -4,8 +4,8 @@ QOL changes that enhances your Hypixel Skyblock experience. Created to add featu
 Discord Server: https://discord.gg/QsEkNQS
 
 ## Incompatibilities
-- Old Animations <2.6.4 - Frequent crashes
-- Old Animations 2.6.4
+- Old Animations Mod 2.6.4
+  - Potential Crashing
   - Pet colors does not color slots
   - Catacombs F7 terminal solvers do not color slots
   - Ultrasequencer solver does not color slots
@@ -20,6 +20,8 @@ Discord Server: https://discord.gg/QsEkNQS
 - Block Zombie Sword ability when at full health
 - Block placing Flower of Truth/Spirit Sceptre
 - Block breaking "farm blocks"
+- Stop salvaging starred items
+- Confirmation to use pet item
 - Disable Spirit Sceptre messages
 - Disable Midas Staff messages
 - Disable Implosion messages
@@ -34,13 +36,15 @@ Discord Server: https://discord.gg/QsEkNQS
 - Block starting other slayer quests
 - Fishing, jerry fishing, fishing festival, spooky fishing trackers
 - Expertise kills in fishing rod lore
-- Puzzler solver
+- Soul Eater "bonus" in lore
+- Mining solvers (Puzzler, Fetchur)
 - Dungeons puzzle solver (Riddle, trivia, blaze, creeper, water, tic tac toe)
 - Catacombs trackers
 - Dungeons regular ability keybind
 - Dungeons timer (watcher, boss, deaths, and puzzle fails)
 - Watcher ready message
 - Low health alert in dungeons
+- Show names above Spirit Leaps
 - Bonzo's Mask Cooldown Timer
 - Catacombs F7 Stage 3 solvers (Starts with letter, select all colour, click in order, simon says, ignore arrows on sea lanterns)
 - Find correct Livid (with graphic display of HP)

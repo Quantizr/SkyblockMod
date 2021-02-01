@@ -56,8 +56,12 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	public static boolean hiddenJerryAlertToggled;
 	public static boolean blockCollectingUnenchantedToggled;
 	public static boolean burrowWaypointsToggled;
+	public static boolean petItemConfirmationToggled;
+	public static boolean spiritLeapNamesToggled;
+	public static boolean soulEaterLoreToggled;
 
 	public static boolean puzzlerToggled;
+	public static boolean fetchurToggled;
 
 	//Dungeon Puzzle Solvers
 	public static boolean threeManToggled;
@@ -89,11 +93,10 @@ public class ToggleCommand extends CommandBase implements ICommand {
 
 	@Override
 	public String getCommandUsage(ICommandSender arg0) {
-
-		return "/" + getCommandName() + " <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalert/" +
+		return "/" + getCommandName() + " <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalert/" + 
 										  "aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/" +
 										  "outlinetext/midasstaffmessages/implosionmessages/healmessages/cooldownmessages/manamessages/caketimer/lowhealthnotify/" +
-										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/puzzler/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
+										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/petitemconfirmation/spiritleapnames/souleaterlore/puzzler/fetchur/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
 										  "watchermessage/startswithterminal/selectallterminal/clickinorderterminal/simonsays/blockwrongterminalclicks/" +
 										  "itemframeonsealanterns/ultrasequencer/chronomatron/superpairs/hidetooltipsinaddons/pickblock/list>";
 	}
@@ -102,7 +105,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	public int getRequiredPermissionLevel() {
 		return 0;
 	}
-
+	
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) {
@@ -112,7 +115,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 														  "expertiselore", "skill50display", "outlinetext", "midasstaffmessages",
 														  "implosionmessages", "healmessages", "cooldownmessages", "manamessages", "caketimer", "lowhealthnotify",
 														  "lividsolver", "stopsalvagestarred", "notifyslayerslain", "necronnotifications",
-														  "bonzotimer", "blockbreakingfarms", "autoskilltracker", "bossbarfix", "hideimplosionparticles", "zombiesword", "autoacceptreparty", "hiddenjerryalert", "blockcollectingunenchanted", "burrowwaypoints", "puzzler", "threemanpuzzle", "oruopuzzle", "blazepuzzle", "onlyshowcorrectblaze",
+														  "bonzotimer", "blockbreakingfarms", "autoskilltracker", "bossbarfix","hideimplosionparticles", "zombiesword", "autoacceptreparty", "hiddenjerryalert", "blockcollectingunenchanted", "burrowwaypoints", "petitemconfirmation", "spiritleapnames", "souleaterlore", "puzzler", "fetchur", "threemanpuzzle", "oruopuzzle", "blazepuzzle", "onlyshowcorrectblaze",
 														  "creeperpuzzle", "waterpuzzle", "tictactoepuzzle", "watchermessage", "startswithterminal",
 														  "selectallterminal", "clickinorderterminal", "blockwrongterminalclicks", "simonsays", "itemframeonsealanterns", "ultrasequencer",
 														  "chronomatron", "superpairs", "hidetooltipsinaddons", "pickblock", "list");
@@ -325,10 +328,30 @@ public class ToggleCommand extends CommandBase implements ICommand {
 				ConfigHandler.writeBooleanConfig("toggles", "BurrowWaypoints", burrowWaypointsToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Griffin Burrow Waypoints has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + burrowWaypointsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
+			case "petitemconfirmation":
+				petItemConfirmationToggled = !petItemConfirmationToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "PetItemConfirmation", petItemConfirmationToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Pet Item Confirmation has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + petItemConfirmationToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "spiritleapnames":
+				spiritLeapNamesToggled = !spiritLeapNamesToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "SpiritLeapNames", spiritLeapNamesToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Spirit Leap Names has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + spiritLeapNamesToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "souleaterlore":
+				soulEaterLoreToggled = !soulEaterLoreToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "SoulEaterLore", soulEaterLoreToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Soul Eater in lore has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + soulEaterLoreToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
 			case "puzzler":
 				puzzlerToggled = !puzzlerToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "Puzzler", puzzlerToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Puzzler solver has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + puzzlerToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "fetchur":
+				fetchurToggled = !fetchurToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "Fetchur", fetchurToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Fetchur solver has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + fetchurToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "threemanpuzzle":
 				threeManToggled = !threeManToggled;
@@ -454,6 +477,8 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Livid solver: " + DankersSkyblockMod.VALUE_COLOUR + lividSolverToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Stop Salvaging Starred Items: " + DankersSkyblockMod.VALUE_COLOUR + stopSalvageStarredToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Necron Notifications: " + DankersSkyblockMod.VALUE_COLOUR + necronNotificationsToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Watcher ready message: " + DankersSkyblockMod.VALUE_COLOUR + watcherReadyToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Auto-swap to pick block " + DankersSkyblockMod.VALUE_COLOUR + swapToPickBlockToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Notify Slayer Slain: " + DankersSkyblockMod.VALUE_COLOUR + notifySlayerSlainToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Prevent Breaking Farms: " + DankersSkyblockMod.VALUE_COLOUR + blockBreakingFarmsToggled + "\n" +
                                                             DankersSkyblockMod.TYPE_COLOUR + " Auto start/stop skill tracker: " + DankersSkyblockMod.VALUE_COLOUR + autoSkillTrackerToggled + "\n" +
@@ -465,7 +490,11 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Hidden Jerry Alert: " + DankersSkyblockMod.VALUE_COLOUR + hiddenJerryAlertToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Block Collecting Unenchanted Items: " + DankersSkyblockMod.VALUE_COLOUR + blockCollectingUnenchantedToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Griffin Burrow Waypoints: " + DankersSkyblockMod.VALUE_COLOUR + burrowWaypointsToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Pet Item Confirmation: " + DankersSkyblockMod.VALUE_COLOUR + petItemConfirmationToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Show Names on Spirit Leap: " + DankersSkyblockMod.VALUE_COLOUR + spiritLeapNamesToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Soul Eater in lore: " + DankersSkyblockMod.VALUE_COLOUR + soulEaterLoreToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Puzzler Solver: " + DankersSkyblockMod.VALUE_COLOUR + puzzlerToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Fetchur Solver: " + DankersSkyblockMod.VALUE_COLOUR + fetchurToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Three man puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + threeManToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Oruo trivia solver: " + DankersSkyblockMod.VALUE_COLOUR + oruoToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Blaze puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + blazeToggled + "\n" +
@@ -473,7 +502,6 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Creeper puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + creeperToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Water puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + waterToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Tic tac toe puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + ticTacToeToggled + "\n" +
-															DankersSkyblockMod.TYPE_COLOUR + " Watcher ready message: " + DankersSkyblockMod.VALUE_COLOUR + watcherReadyToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Starts with letter terminal solver: " + DankersSkyblockMod.VALUE_COLOUR + startsWithToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Select all color items terminal solver: " + DankersSkyblockMod.VALUE_COLOUR + selectAllToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Click in order terminal helper: " + DankersSkyblockMod.VALUE_COLOUR + clickInOrderToggled + "\n" +
@@ -483,8 +511,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Ultra sequencer solver: " + DankersSkyblockMod.VALUE_COLOUR + ultrasequencerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Chronomatron solver: " + DankersSkyblockMod.VALUE_COLOUR + chronomatronToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Superpairs solver: " + DankersSkyblockMod.VALUE_COLOUR + superpairsToggled + "\n" +
-															DankersSkyblockMod.TYPE_COLOUR + " Hide tooltips in experiment addons: " + DankersSkyblockMod.VALUE_COLOUR + hideTooltipsInExperimentAddonsToggled + "\n" +
-															DankersSkyblockMod.TYPE_COLOUR + " Auto-swap to pick block " + DankersSkyblockMod.VALUE_COLOUR + swapToPickBlockToggled 
+															DankersSkyblockMod.TYPE_COLOUR + " Hide tooltips in experiment addons: " + DankersSkyblockMod.VALUE_COLOUR + hideTooltipsInExperimentAddonsToggled + "\n"
 				));
 				break;
 			default:

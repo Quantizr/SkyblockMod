@@ -214,8 +214,12 @@ public class ConfigHandler {
 		if (!hasKey("toggles", "HiddenJerryAlert")) writeBooleanConfig("toggles", "HiddenJerryAlert", false);
 		if (!hasKey("toggles", "BlockCollectingUnenchanted")) writeBooleanConfig("toggles", "BlockCollectingUnenchanted", false);
 		if (!hasKey("toggles", "BurrowWaypoints")) writeBooleanConfig("toggles", "BurrowWaypoints", false);
+		if (!hasKey("toggles", "PetItemConfirmation")) writeBooleanConfig("toggles", "PetItemConfirmation", false);
+		if (!hasKey("toggles", "SpiritLeapNames")) writeBooleanConfig("toggles", "SpiritLeapNames", false);
+		if (!hasKey("toggles", "SoulEaterLore")) writeBooleanConfig("toggles", "SoulEaterLore", false);
 
 		if (!hasKey("toggles", "Puzzler")) writeBooleanConfig("toggles", "Puzzler", false);
+		if (!hasKey("toggles", "Fetchur")) writeBooleanConfig("toggles", "Fetchur", false);
 
 		// Dungeon Puzzle Solvers
 		if (!hasKey("toggles", "ThreeManPuzzle")) writeBooleanConfig("toggles", "ThreeManPuzzle", false);
@@ -495,9 +499,11 @@ public class ConfigHandler {
 		ToggleCommand.dungeonTimerToggled = getBoolean("toggles", "DungeonTimer");
 		ToggleCommand.lowHealthNotifyToggled = getBoolean("toggles", "LowHealthNotify");
 		ToggleCommand.lividSolverToggled = getBoolean("toggles", "LividSolver");
+		ToggleCommand.swapToPickBlockToggled = getBoolean("toggles", "PickBlock");
 		ToggleCommand.stopSalvageStarredToggled = getBoolean("toggles", "StopSalvageStarred");
 		ToggleCommand.watcherReadyToggled = getBoolean("toggles", "WatcherReadyMessage");
 		ToggleCommand.notifySlayerSlainToggled = getBoolean("toggles", "NotifySlayerSlain");
+		ToggleCommand.flowerWeaponsToggled = getBoolean("toggles", "FlowerWeapons");
 		ToggleCommand.necronNotificationsToggled = getBoolean("toggles", "NecronNotifications");
 		ToggleCommand.bonzoTimerToggled = getBoolean("toggles", "BonzoTimer");
 		ToggleCommand.blockBreakingFarmsToggled = getBoolean("toggles", "BlockBreakingFarms");
@@ -509,10 +515,12 @@ public class ConfigHandler {
 		ToggleCommand.hiddenJerryAlertToggled = getBoolean("toggles", "HiddenJerryAlert");
 		ToggleCommand.blockCollectingUnenchantedToggled = getBoolean("toggles", "BlockCollectingUnenchanted");
 		ToggleCommand.burrowWaypointsToggled = getBoolean("toggles", "BurrowWaypoints");
-		ToggleCommand.swapToPickBlockToggled = getBoolean("toggles", "PickBlock");
-		ToggleCommand.flowerWeaponsToggled = getBoolean("toggles", "FlowerWeapons");
+		ToggleCommand.petItemConfirmationToggled = getBoolean("toggles", "PetItemConfirmation");
+		ToggleCommand.spiritLeapNamesToggled = getBoolean("toggles", "SpiritLeapNames");
+		ToggleCommand.soulEaterLoreToggled = getBoolean("toggles", "SoulEaterLore");
 
 		ToggleCommand.puzzlerToggled = getBoolean("toggles", "Puzzler");
+		ToggleCommand.fetchurToggled = getBoolean("toggles", "Fetchur");
 
 		// Puzzle Solvers
 		ToggleCommand.threeManToggled = getBoolean("toggles", "ThreeManPuzzle");

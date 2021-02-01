@@ -74,7 +74,12 @@ public class DankerGui extends GuiScreen {
 	private GuiButton hiddenJerryAlert;
 	private GuiButton blockCollectingUnenchanted;
 	private GuiButton burrowWaypoints;
+	private GuiButton petItemConfirmation;
+	private GuiButton spiritLeapNames;
+	private GuiButton soulEaterLore;
+
 	private GuiButton puzzler;
+	private GuiButton fetchur;
 
 	public DankerGui(int page) {
 		this.page = page;
@@ -150,11 +155,16 @@ public class DankerGui extends GuiScreen {
 		hideImplosionParticles = new GuiButton(0, width / 2 - 100, (int) (height * 0.6), "Hide Implosion Particles: " + Utils.getColouredBoolean(ToggleCommand.hideImplosionParticlesToggled));
 		zombieSword = new GuiButton(0, width / 2 - 100, (int) (height * 0.7), "Block Useless Zombie Sword Use: " + Utils.getColouredBoolean(ToggleCommand.zombieSwordToggled));
 		// Page 7
+		blockCollectingUnenchanted = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Block Collecting Unenchanted Items: " + Utils.getColouredBoolean(ToggleCommand.blockCollectingUnenchantedToggled));
+		burrowWaypoints = new GuiButton(0, width / 2 - 100, (int) (height * 0.2), "Griffin Burrow Waypoints: " + Utils.getColouredBoolean(ToggleCommand.burrowWaypointsToggled));
+		puzzler = new GuiButton(0, width / 2 - 100, (int) (height * 0.3), "Puzzler Solver: " + Utils.getColouredBoolean(ToggleCommand.puzzlerToggled));
+		fetchur = new GuiButton(0, width / 2 - 100, (int) (height * 0.4), "Fetchur Solver: " + Utils.getColouredBoolean(ToggleCommand.fetchurToggled));
+		petItemConfirmation = new GuiButton(0, width / 2 - 100, (int) (height * 0.5), "Pet Item Confirmation: " + Utils.getColouredBoolean(ToggleCommand.petItemConfirmationToggled));
+		spiritLeapNames = new GuiButton(0, width / 2 - 100, (int) (height * 0.6), "Show Names on Spirit Leap: " + Utils.getColouredBoolean(ToggleCommand.spiritLeapNamesToggled));
+		soulEaterLore = new GuiButton(0, width / 2 - 100, (int) (height * 0.7), "Soul Eater Bonus in Lore: " + Utils.getColouredBoolean(ToggleCommand.soulEaterLoreToggled));
+		//Page 8
 		autoAcceptReparty = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Auto Accept Reparty: " + Utils.getColouredBoolean(ToggleCommand.autoAcceptRepartyToggled));
 		hiddenJerryAlert = new GuiButton(0, width / 2 - 100, (int) (height * 0.2), "Hidden Jerry Alert: " + Utils.getColouredBoolean(ToggleCommand.hiddenJerryAlertToggled));
-		blockCollectingUnenchanted = new GuiButton(0, width / 2 - 100, (int) (height * 0.3), "Block Collecting Unenchanted Items: " + Utils.getColouredBoolean(ToggleCommand.blockCollectingUnenchantedToggled));
-		burrowWaypoints = new GuiButton(0, width / 2 - 100, (int) (height * 0.4), "Griffin Burrow Waypoints: " + Utils.getColouredBoolean(ToggleCommand.burrowWaypointsToggled));
-		puzzler = new GuiButton(0, width / 2 - 100, (int) (height * 0.5), "Puzzler Solver: " + Utils.getColouredBoolean(ToggleCommand.puzzlerToggled));
 
 		switch (page) {
 			case 1:
@@ -223,11 +233,18 @@ public class DankerGui extends GuiScreen {
 				this.buttonList.add(backPage);
 				break;
 			case 7:
-				this.buttonList.add(autoAcceptReparty);
-				this.buttonList.add(hiddenJerryAlert);
 				this.buttonList.add(blockCollectingUnenchanted);
 				this.buttonList.add(burrowWaypoints);
 				this.buttonList.add(puzzler);
+				this.buttonList.add(fetchur);
+				this.buttonList.add(petItemConfirmation);
+				this.buttonList.add(spiritLeapNames);
+				this.buttonList.add(soulEaterLore);
+				this.buttonList.add(nextPage);
+				this.buttonList.add(backPage);
+			case 8:
+				this.buttonList.add(autoAcceptReparty);
+				this.buttonList.add(hiddenJerryAlert);
 				this.buttonList.add(backPage);
 		}
 		
@@ -378,7 +395,11 @@ public class DankerGui extends GuiScreen {
 			ToggleCommand.implosionMessages = !ToggleCommand.implosionMessages;
 			ConfigHandler.writeBooleanConfig("toggles", "ImplosionMessages", ToggleCommand.implosionMessages);
 			implosionMessages.displayString = "Implosion Messages: " + Utils.getColouredBoolean(ToggleCommand.implosionMessages);
-		} else if(button == stopSalvageStarred) {
+		} else if (button == pickBlock) {
+			ToggleCommand.swapToPickBlockToggled = !ToggleCommand.swapToPickBlockToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "PickBlock", ToggleCommand.swapToPickBlockToggled);
+			pickBlock.displayString = "Auto-Swap to Pick Block: " + Utils.getColouredBoolean(ToggleCommand.swapToPickBlockToggled);
+		} else if (button == stopSalvageStarred) {
 			ToggleCommand.stopSalvageStarredToggled = !ToggleCommand.stopSalvageStarredToggled;
 			ConfigHandler.writeBooleanConfig("toggles", "StopSalvageStarred", ToggleCommand.stopSalvageStarredToggled);
 			stopSalvageStarred.displayString = "Stop Salvaging Starred Items: " + Utils.getColouredBoolean(ToggleCommand.stopSalvageStarredToggled);
@@ -390,6 +411,10 @@ public class DankerGui extends GuiScreen {
 			ToggleCommand.notifySlayerSlainToggled = !ToggleCommand.notifySlayerSlainToggled;
 			ConfigHandler.writeBooleanConfig("toggles", "NotifySlayerSlain", ToggleCommand.notifySlayerSlainToggled);
 			notifySlayerSlain.displayString = "Notify when Slayer Slain: " + Utils.getColouredBoolean(ToggleCommand.notifySlayerSlainToggled);
+		} else if (button == flowerWeapons) {
+			ToggleCommand.flowerWeaponsToggled = !ToggleCommand.flowerWeaponsToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "FlowerWeapons", ToggleCommand.flowerWeaponsToggled);
+			flowerWeapons.displayString = "Prevent Placing FoT/Spirit Sceptre: " + Utils.getColouredBoolean(ToggleCommand.flowerWeaponsToggled);
 		} else if (button == necronNotifications) {
 			ToggleCommand.necronNotificationsToggled = !ToggleCommand.necronNotificationsToggled;
 			ConfigHandler.writeBooleanConfig("toggles", "NecronNotifications", ToggleCommand.necronNotificationsToggled);
@@ -438,15 +463,22 @@ public class DankerGui extends GuiScreen {
 			ToggleCommand.puzzlerToggled = !ToggleCommand.puzzlerToggled;
 			ConfigHandler.writeBooleanConfig("toggles", "Puzzler", ToggleCommand.puzzlerToggled);
 			puzzler.displayString = "Puzzler Solver: " + Utils.getColouredBoolean(ToggleCommand.puzzlerToggled);
-		} else if (button == pickBlock) {
-			ToggleCommand.swapToPickBlockToggled = !ToggleCommand.swapToPickBlockToggled;
-			ConfigHandler.writeBooleanConfig("toggles", "PickBlock", ToggleCommand.swapToPickBlockToggled);
-			pickBlock.displayString = "Auto-Swap to Pick Block: " + Utils.getColouredBoolean(ToggleCommand.swapToPickBlockToggled);
-		} else if (button == flowerWeapons) {
-			ToggleCommand.flowerWeaponsToggled = !ToggleCommand.flowerWeaponsToggled;
-			ConfigHandler.writeBooleanConfig("toggles", "FlowerWeapons", ToggleCommand.flowerWeaponsToggled);
-			flowerWeapons.displayString = "Prevent Placing FoT/Spirit Sceptre: " + Utils.getColouredBoolean(ToggleCommand.flowerWeaponsToggled);
+		} else if (button == fetchur) {
+			ToggleCommand.fetchurToggled = !ToggleCommand.fetchurToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "Fetchur", ToggleCommand.fetchurToggled);
+			fetchur.displayString = "Fetchur Solver: " + Utils.getColouredBoolean(ToggleCommand.fetchurToggled);
+		} else if (button == petItemConfirmation) {
+			ToggleCommand.petItemConfirmationToggled = !ToggleCommand.petItemConfirmationToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "PetItemConfirmation", ToggleCommand.petItemConfirmationToggled);
+			petItemConfirmation.displayString = "Pet Item Confirmation: " + Utils.getColouredBoolean(ToggleCommand.petItemConfirmationToggled);
+		} else if (button == spiritLeapNames) {
+			ToggleCommand.spiritLeapNamesToggled = !ToggleCommand.spiritLeapNamesToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "SpiritLeapNames", ToggleCommand.spiritLeapNamesToggled);
+			spiritLeapNames.displayString = "Show Names on Spirit Leap: " + Utils.getColouredBoolean(ToggleCommand.spiritLeapNamesToggled);
+		} else if (button == soulEaterLore) {
+			ToggleCommand.soulEaterLoreToggled = !ToggleCommand.soulEaterLoreToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "SoulEaterLore", ToggleCommand.soulEaterLoreToggled);
+			soulEaterLore.displayString = "Soul Eater Bonus in Lore: " + Utils.getColouredBoolean(ToggleCommand.soulEaterLoreToggled);
 		}
 	}
-	
 }

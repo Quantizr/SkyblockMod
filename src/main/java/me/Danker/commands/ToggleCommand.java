@@ -62,6 +62,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 
 	public static boolean puzzlerToggled;
 	public static boolean fetchurToggled;
+	public static boolean monolithWaypointsToggled;
 
 	//Dungeon Puzzle Solvers
 	public static boolean threeManToggled;
@@ -96,7 +97,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 		return "/" + getCommandName() + " <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalert/" + 
 										  "aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/" +
 										  "outlinetext/midasstaffmessages/implosionmessages/healmessages/cooldownmessages/manamessages/caketimer/lowhealthnotify/" +
-										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/petitemconfirmation/spiritleapnames/souleaterlore/puzzler/fetchur/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
+										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/petitemconfirmation/spiritleapnames/souleaterlore/puzzler/fetchur/monolithwaypoints/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
 										  "watchermessage/startswithterminal/selectallterminal/clickinorderterminal/simonsays/blockwrongterminalclicks/" +
 										  "itemframeonsealanterns/ultrasequencer/chronomatron/superpairs/hidetooltipsinaddons/pickblock/list>";
 	}
@@ -115,7 +116,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 														  "expertiselore", "skill50display", "outlinetext", "midasstaffmessages",
 														  "implosionmessages", "healmessages", "cooldownmessages", "manamessages", "caketimer", "lowhealthnotify",
 														  "lividsolver", "stopsalvagestarred", "notifyslayerslain", "necronnotifications",
-														  "bonzotimer", "blockbreakingfarms", "autoskilltracker", "bossbarfix","hideimplosionparticles", "zombiesword", "autoacceptreparty", "hiddenjerryalert", "blockcollectingunenchanted", "burrowwaypoints", "petitemconfirmation", "spiritleapnames", "souleaterlore", "puzzler", "fetchur", "threemanpuzzle", "oruopuzzle", "blazepuzzle", "onlyshowcorrectblaze",
+														  "bonzotimer", "blockbreakingfarms", "autoskilltracker", "bossbarfix","hideimplosionparticles", "zombiesword", "autoacceptreparty", "hiddenjerryalert", "blockcollectingunenchanted", "burrowwaypoints", "petitemconfirmation", "spiritleapnames", "souleaterlore", "puzzler", "fetchur", "monolithwaypoints", "threemanpuzzle", "oruopuzzle", "blazepuzzle", "onlyshowcorrectblaze",
 														  "creeperpuzzle", "waterpuzzle", "tictactoepuzzle", "watchermessage", "startswithterminal",
 														  "selectallterminal", "clickinorderterminal", "blockwrongterminalclicks", "simonsays", "itemframeonsealanterns", "ultrasequencer",
 														  "chronomatron", "superpairs", "hidetooltipsinaddons", "pickblock", "list");
@@ -353,6 +354,14 @@ public class ToggleCommand extends CommandBase implements ICommand {
 				ConfigHandler.writeBooleanConfig("toggles", "Fetchur", fetchurToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Fetchur solver has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + fetchurToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
+			case "monolithwaypoints":
+				monolithWaypointsToggled = !monolithWaypointsToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "MonolithWaypoints", monolithWaypointsToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Display Dark Monolith waypoints has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + monolithWaypointsToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				if (monolithWaypointsToggled){
+					player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "You will need to move/look around the Dwarven Mines for the Dark Monolith Waypoints to be within render distance"));
+				}
+				break;
 			case "threemanpuzzle":
 				threeManToggled = !threeManToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "ThreeManPuzzle", threeManToggled);
@@ -495,6 +504,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Soul Eater in lore: " + DankersSkyblockMod.VALUE_COLOUR + soulEaterLoreToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Puzzler Solver: " + DankersSkyblockMod.VALUE_COLOUR + puzzlerToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Fetchur Solver: " + DankersSkyblockMod.VALUE_COLOUR + fetchurToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Display Dark Monolith waypoints: " + DankersSkyblockMod.VALUE_COLOUR + monolithWaypointsToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Three man puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + threeManToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Oruo trivia solver: " + DankersSkyblockMod.VALUE_COLOUR + oruoToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Blaze puzzle solver: " + DankersSkyblockMod.VALUE_COLOUR + blazeToggled + "\n" +

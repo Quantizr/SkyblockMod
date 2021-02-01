@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.util.ChatComponentText;
 
 import java.awt.*;
 import java.io.IOException;
@@ -80,6 +81,7 @@ public class DankerGui extends GuiScreen {
 
 	private GuiButton puzzler;
 	private GuiButton fetchur;
+	private GuiButton monolithWaypoints;
 
 	public DankerGui(int page) {
 		this.page = page;
@@ -165,6 +167,7 @@ public class DankerGui extends GuiScreen {
 		//Page 8
 		autoAcceptReparty = new GuiButton(0, width / 2 - 100, (int) (height * 0.1), "Auto Accept Reparty: " + Utils.getColouredBoolean(ToggleCommand.autoAcceptRepartyToggled));
 		hiddenJerryAlert = new GuiButton(0, width / 2 - 100, (int) (height * 0.2), "Hidden Jerry Alert: " + Utils.getColouredBoolean(ToggleCommand.hiddenJerryAlertToggled));
+		monolithWaypoints = new GuiButton(0, width / 2 - 100, (int) (height * 0.3), "Display Dark Monolith Waypoints: " + Utils.getColouredBoolean(ToggleCommand.monolithWaypointsToggled));
 
 		switch (page) {
 			case 1:
@@ -245,6 +248,7 @@ public class DankerGui extends GuiScreen {
 			case 8:
 				this.buttonList.add(autoAcceptReparty);
 				this.buttonList.add(hiddenJerryAlert);
+				this.buttonList.add(monolithWaypoints);
 				this.buttonList.add(backPage);
 		}
 		
@@ -257,7 +261,7 @@ public class DankerGui extends GuiScreen {
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawDefaultBackground();
-		String pageText = "Page: " + page + "/7";
+		String pageText = "Page: " + page + "/8";
 		int pageWidth = mc.fontRendererObj.getStringWidth(pageText);
 		new TextRenderer(mc, pageText, width / 2 - pageWidth / 2, 10, 1D);
 		super.drawScreen(mouseX, mouseY, partialTicks);
@@ -479,6 +483,14 @@ public class DankerGui extends GuiScreen {
 			ToggleCommand.soulEaterLoreToggled = !ToggleCommand.soulEaterLoreToggled;
 			ConfigHandler.writeBooleanConfig("toggles", "SoulEaterLore", ToggleCommand.soulEaterLoreToggled);
 			soulEaterLore.displayString = "Soul Eater Bonus in Lore: " + Utils.getColouredBoolean(ToggleCommand.soulEaterLoreToggled);
+		}
+		else if (button == monolithWaypoints) {
+			ToggleCommand.monolithWaypointsToggled = !ToggleCommand.monolithWaypointsToggled;
+			ConfigHandler.writeBooleanConfig("toggles", "MonolithWaypoints", ToggleCommand.monolithWaypointsToggled);
+			monolithWaypoints.displayString = "Display Dark Monolith Waypoints: " + Utils.getColouredBoolean(ToggleCommand.monolithWaypointsToggled);
+			if (ToggleCommand.monolithWaypointsToggled){
+				Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "You will need to move/look around the Dwarven Mines for the Dark Monolith Waypoints to be within render distance"));
+			}
 		}
 	}
 }

@@ -7,6 +7,7 @@ import me.Danker.commands.*;
 import me.Danker.gui.*;
 import me.Danker.handlers.*;
 import me.Danker.utils.*;
+import me.Danker.handlers.LocationHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -221,6 +222,7 @@ public class DankersSkyblockMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new LocationHandler());
 
         ConfigHandler.reloadConfig();
 
@@ -2962,6 +2964,7 @@ public class DankersSkyblockMod {
             if (player != null) {
                 Utils.checkForSkyblock();
                 Utils.checkForDungeons();
+                if (Utils.inSkyblock) LocationHandler.sendLocraw();
             }
 
             if (DisplayCommand.auto && world != null && player != null) {
@@ -3529,7 +3532,9 @@ public class DankersSkyblockMod {
 
     @SubscribeEvent
     public void onWorldRender(RenderWorldLastEvent event) {
-
+        if (ToggleCommand.monolithWaypointsToggled && LocationHandler.getLocation().equals("mining_3")) {
+            DarkMonolithUtils.drawWaypoint(DarkMonolithUtils.findMonolith(), event.partialTicks);
+        }
         if (ToggleCommand.puzzlerToggled && puzzlerSolution != null && !puzzlerSolution.equals(new BlockPos(181, 195, 135))) {
             Utils.draw3DBox(new AxisAlignedBB(puzzlerSolution, puzzlerSolution.add(1, 1, 1)), new Color(255, 0, 0).getRGB(), event.partialTicks);
         }

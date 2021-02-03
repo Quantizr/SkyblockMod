@@ -1,26 +1,26 @@
 package me.Danker;
 
+import akka.event.Logging;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import me.Danker.commands.*;
 import me.Danker.gui.*;
 import me.Danker.handlers.*;
-import me.Danker.utils.DarkMonolithUtils;
+import me.Danker.utils.*;
 import me.Danker.handlers.LocationHandler;
-import me.Danker.utils.TicTacToeUtils;
-import me.Danker.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.command.ICommand;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntitySpider;
 import net.minecraft.entity.monster.EntityZombie;
@@ -35,9 +35,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemMap;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
@@ -48,7 +46,6 @@ import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -60,10 +57,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent;
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
 import org.apache.commons.lang3.time.StopWatch;
 import org.lwjgl.input.Keyboard;
@@ -71,6 +66,8 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
+import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
@@ -80,7 +77,10 @@ import java.util.regex.Pattern;
 @Mod(modid = DankersSkyblockMod.MODID, version = DankersSkyblockMod.VERSION, clientSideOnly = true)
 public class DankersSkyblockMod {
     public static final String MODID = "Danker's Skyblock Mod";
-    public static final String VERSION = "1.8.5-beta7";
+    public static final String VERSION = "1.8.5-ALPHA-b8";
+
+    public static Minecraft mc = Minecraft.getMinecraft();
+
     static double checkItemsNow = 0;
     static double itemsChecked = 0;
     public static Map<String, String> t6Enchants = new HashMap<>();
@@ -97,14 +97,22 @@ public class DankersSkyblockMod {
     static int tickAmount = 1;
     static String lastMaddoxCommand = "/cb placeholder";
     static double lastMaddoxTime = 0;
-    static KeyBinding[] keyBindings = new KeyBinding[3];
+    static KeyBinding[] keyBindings = new KeyBinding[4];
     static boolean usingLabymod = false;
+    static boolean usingOAM = false;
+    static boolean OAMWarning = false;
     public static String guiToOpen = null;
     static boolean foundLivid = false;
     static Entity livid = null;
     public static double cakeTime;
     public static double nextBonzoUse = 0;
     public static boolean firstLaunch = false;
+    static String lastPartyDisbander = "";
+    static BlockPos puzzlerSolution = null;
+    static ItemStack petItemLastAttempted;
+    static long timeOfLastPetItemAttempt;
+    static int petItemAttemptsRequired;
+    static HashMap<String, String> fetchurItems = new HashMap<>();
 
     public static final ResourceLocation CAKE_ICON = new ResourceLocation("dsm", "icons/cake.png");
     public static final ResourceLocation BONZO_ICON = new ResourceLocation("dsm", "icons/bonzo.png");
@@ -112,10 +120,19 @@ public class DankersSkyblockMod {
     static String[] riddleSolutions = {"The reward is not in my chest!", "At least one of them is lying, and the reward is not in",
             "My chest doesn't have the reward. We are all telling the truth", "My chest has the reward and I'm telling the truth",
             "The reward isn't in any of our chests", "Both of them are telling the truth."};
+    static String riddleNPC = null;
+    public static BlockPos riddleChest = null;
     static Map<String, String[]> triviaSolutions = new HashMap<>();
     static String[] triviaAnswers = null;
-    static Entity highestBlaze = null;
-    static Entity lowestBlaze = null;
+    static String triviaAnswer = null;
+    static EntityArmorStand highestBlazeLabel = null;
+    static EntityArmorStand lowestBlazeLabel = null;
+    public static EntityBlaze highestBlaze = null;
+    public static EntityBlaze lowestBlaze = null;
+    static int blazeMode = 0;
+    static BlockPos blazeChest = null;
+    static boolean shotArrowNearBlaze = false;
+
     // Among Us colours
     static final int[] CREEPER_COLOURS = {0x50EF39, 0xC51111, 0x132ED1, 0x117F2D, 0xED54BA, 0xEF7D0D, 0xF5F557, 0xD6E0F0, 0x6B2FBB, 0x39FEDC};
     static boolean drawCreeperLines = false;
@@ -134,8 +151,10 @@ public class DankersSkyblockMod {
     static ItemStack[] experimentTableSlots = new ItemStack[54];
     static int pickBlockBind;
     static boolean pickBlockBindSwapped = false;
-    static String terminalColorNeeded;
+    static String terminalColourNeeded;
     static int[] terminalNumberNeeded = new int[4];
+    public static ArrayList<BlockPos> simonBlockOrder = new ArrayList<>();
+    public static int simonNumberNeeded = 0;
 
     static double dungeonStartTime = 0;
     static double bloodOpenTime = 0;
@@ -185,7 +204,7 @@ public class DankersSkyblockMod {
     public static String CAKE_COLOUR;
     public static String SKILL_TRACKER_COLOUR;
     public static String TRIVIA_WRONG_ANSWER_COLOUR;
-    public static String BONZO_COLOR;
+    public static String BONZO_COLOUR;
     public static int LOWEST_BLAZE_COLOUR;
     public static int HIGHEST_BLAZE_COLOUR;
     public static int PET_1_TO_9;
@@ -203,7 +222,6 @@ public class DankersSkyblockMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(new PacketHandler());
         MinecraftForge.EVENT_BUS.register(new LocationHandler());
 
         ConfigHandler.reloadConfig();
@@ -253,7 +271,7 @@ public class DankersSkyblockMod {
         triviaSolutions.put("What is the status of Goldor?", new String[]{"Wither Soldier"});
         triviaSolutions.put("What is the status of Storm?", new String[]{"Elementalist"});
         triviaSolutions.put("What is the status of Necron?", new String[]{"Wither Lord"});
-        triviaSolutions.put("How many total Fairy Souls are there?", new String[]{"209 Fairy Souls"});
+        triviaSolutions.put("How many total Fairy Souls are there?", new String[]{"220 Fairy Souls"});
         triviaSolutions.put("How many Fairy Souls are there in Spider's Den?", new String[]{"17 Fairy Souls"});
         triviaSolutions.put("How many Fairy Souls are there in The End?", new String[]{"12 Fairy Souls"});
         triviaSolutions.put("How many Fairy Souls are there in The Barn?", new String[]{"7 Fairy Souls"});
@@ -272,7 +290,7 @@ public class DankersSkyblockMod {
         triviaSolutions.put("What is the name of the person that upgrades pets?", new String[]{"Kat"});
         triviaSolutions.put("What is the name of the lady of the Nether?", new String[]{"Elle"});
         triviaSolutions.put("Which villager in the Village gives you a Rogue Sword?", new String[]{"Jamie"});
-        triviaSolutions.put("How many unique minions are there?", new String[]{"52 Minions"});
+        triviaSolutions.put("How many unique minions are there?", new String[]{"53 Minions"});
         triviaSolutions.put("Which of these enemies does not spawn in the Spider's Den?", new String[]{"Zombie Spider", "Cave Spider", "Wither Skeleton",
                 "Dashing Spooder", "Broodfather", "Night Spider"});
         triviaSolutions.put("Which of these monsters only spawns at night?", new String[]{"Zombie Villager", "Ghast"});
@@ -282,9 +300,24 @@ public class DankersSkyblockMod {
         String patternString = "(" + String.join("|", t6Enchants.keySet()) + ")";
         t6EnchantPattern = Pattern.compile(patternString);
 
+        fetchurItems.put("theyre yellow and see through", "20 Yellow Stained Glass");
+        fetchurItems.put("its circlular and sometimes moves", "1 Compass");
+        fetchurItems.put("theyre expensive minerals", "20 Mithril");
+        fetchurItems.put("its useful during celebrations", "1 Firework Rocket");
+        fetchurItems.put("its hot and gives energy", "1 Cheap Coffee or 1 Decent Coffee");
+        fetchurItems.put("its tall and can be opened", "1 Wooden Door");
+        //hypixel disabled fetchur for a couple of days here, some may be missing
+        fetchurItems.put("its explosive but more than usual", "1 Superboom TNT");
+        fetchurItems.put("its wearable and grows", "1 Pumpkin");
+        fetchurItems.put("its shiny and makes sparks", "1 Flint and Steel");
+        fetchurItems.put("theyre red and white and you can mine it", "50 Nether Quartz Ore");
+        fetchurItems.put("theyre round and green or purple", "16 Ender Pearls");
+        fetchurItems.put("theyre red and soft", "50 Red Wool");
+
         keyBindings[0] = new KeyBinding("Open Maddox Menu", Keyboard.KEY_M, "Danker's Skyblock Mod");
         keyBindings[1] = new KeyBinding("Regular Ability", Keyboard.KEY_NUMPAD4, "Danker's Skyblock Mod");
         keyBindings[2] = new KeyBinding("Start/Stop Skill Tracker", Keyboard.KEY_NUMPAD5, "Danker's Skyblock Mod");
+        keyBindings[3] = new KeyBinding("Swap Bonemerang", Keyboard.KEY_NONE, "Danker's Skyblock Mod");
 
         for (KeyBinding keyBinding : keyBindings) {
             ClientRegistry.registerKeyBinding(keyBinding);
@@ -316,14 +349,42 @@ public class DankersSkyblockMod {
     	ClientCommandHandler.instance.registerCommand(new LobbySkillsCommand());
     	ClientCommandHandler.instance.registerCommand(new DankerGuiCommand());
 		ClientCommandHandler.instance.registerCommand(new SkillTrackerCommand());
-		ClientCommandHandler.instance.registerCommand(new RepartyCommand());
     }
 
     @EventHandler
     public void postInit(final FMLPostInitializationEvent event) {
-        usingLabymod = Loader.isModLoaded("labymod");
-        System.out.println("LabyMod detection: " + usingLabymod);
+		Package[] packages = Package.getPackages();
+		for(Package p : packages){
+			if(p.getName().startsWith("com.spiderfrog.gadgets") || p.getName().startsWith("com.spiderfrog.oldanimations")){
+				usingOAM = true;
+			}
+		}
+		System.out.println("OAM detection: " + usingOAM);
+
+    	usingLabymod = Loader.isModLoaded("labymod");
+    	System.out.println("LabyMod detection: " + usingLabymod);
+
+        if(!ClientCommandHandler.instance.getCommands().containsKey("reparty")) {
+            ClientCommandHandler.instance.registerCommand(new RepartyCommand());
+        } else if (ConfigHandler.getBoolean("commands", "reparty")) {
+            for(Map.Entry<String, ICommand> entry : ClientCommandHandler.instance.getCommands().entrySet()) {
+                if (entry.getKey().equals("reparty") || entry.getKey().equals("rp")) {
+                    entry.setValue(new RepartyCommand());
+                }
+            }
+        }
+
     }
+
+    @SubscribeEvent
+	public void onGuiOpenEvent(GuiOpenEvent event){
+		if(event.gui instanceof GuiMainMenu && usingOAM && !OAMWarning){
+			if(!(event.gui instanceof WarningGui)){
+				event.gui = new WarningGuiRedirect(new WarningGui());
+				OAMWarning = true;
+			}
+		}
+	}
 
     // Update checker
     @SubscribeEvent
@@ -341,7 +402,7 @@ public class DankersSkyblockMod {
 
             new Thread(() -> {
                 while (true) {
-                    if (Minecraft.getMinecraft().thePlayer == null) {
+                    if (mc.thePlayer == null) {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
@@ -354,7 +415,7 @@ public class DankersSkyblockMod {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    Minecraft.getMinecraft().thePlayer.addChatMessage(chatComponent);
+                    mc.thePlayer.addChatMessage(chatComponent);
                     break;
                 }
             }).start();
@@ -365,7 +426,7 @@ public class DankersSkyblockMod {
 
             // MULTI THREAD DRIFTING
             new Thread(() -> {
-                EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+                EntityPlayer player = mc.thePlayer;
 
                 System.out.println("Checking for updates...");
                 JsonObject latestRelease = APIHandler.getResponse("https://api.github.com/repos/bowser0000/SkyblockMod/releases/latest");
@@ -396,6 +457,20 @@ public class DankersSkyblockMod {
         foundLivid = false;
         livid = null;
         nextBonzoUse = 0;
+        riddleNPC = null;
+        riddleChest = null;
+        lowestBlazeLabel = null;
+        highestBlazeLabel = null;
+        lowestBlaze = null;
+        highestBlaze = null;
+        blazeMode = 0;
+        blazeChest = null;
+        triviaAnswer = null;
+        shotArrowNearBlaze = false;
+        simonBlockOrder.clear();
+        simonNumberNeeded = 0;
+        puzzlerSolution = null;
+        GriffinBurrowUtils.burrows.clear();
     }
 
     // It randomly broke, so I had to make it the highest priority
@@ -406,50 +481,156 @@ public class DankersSkyblockMod {
         if (message.startsWith("Your new API key is ") && Utils.isOnHypixel()) {
             String apiKey = event.message.getSiblings().get(0).getChatStyle().getChatClickEvent().getValue();
             ConfigHandler.writeStringConfig("api", "APIKey", apiKey);
-            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Set API key to " + DankersSkyblockMod.SECONDARY_COLOUR + apiKey));
+            mc.thePlayer.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Set API key to " + DankersSkyblockMod.SECONDARY_COLOUR + apiKey));
+        }
+
+        if (ToggleCommand.autoAcceptRepartyToggled && Utils.isOnHypixel()) {
+            if (message.contains("has disbanded the party!")) {
+                Pattern player_pattern = Pattern.compile("(?:\\[.+?] )?(\\w+)");
+                Matcher matcher = player_pattern.matcher(message);
+                if (matcher.find()) {
+                    lastPartyDisbander = matcher.group(1);
+                    System.out.println("Party disbanded by " + lastPartyDisbander);
+                }
+            }
+            if (message.contains("You have 60 seconds to accept") && lastPartyDisbander.length() > 0 && event.message.getSiblings().size() > 0) {
+                ChatStyle acceptMessage = event.message.getSiblings().get(6).getChatStyle();
+                if (acceptMessage.getChatHoverEvent().getValue().getUnformattedText().contains(lastPartyDisbander)) {
+                    mc.thePlayer.sendChatMessage("/party accept " + lastPartyDisbander);
+                    lastPartyDisbander = "";
+                }
+            }
         }
 
 		// Reparty command
-		if (System.currentTimeMillis() / 1000 - RepartyCommand.callTime <= 5) {
-			if (!(message.contains("----") || message.contains("disbanded") || message.contains("seconds to accept") || message.contains("●") || message.contains("Party Members") || message.contains("Couldn't find a player") || message.contains("cannot invite that player") || message.length() == 0)) {
-				return;
-			}
-			
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			
-			Pattern party_start_pattern = Pattern.compile("^Party Members \\((\\d+)\\)$");
-            Pattern leader_pattern = Pattern.compile("^Party Leader: (?:\\[.+?] )?(\\w+) ●$");
-			Pattern members_pattern = Pattern.compile(" (?:\\[.+?] )?(\\w+) ●");
-            Matcher party_start = party_start_pattern.matcher(message);
-            Matcher leader = leader_pattern.matcher(message);
-            Matcher members = members_pattern.matcher(message);
-			
-			if (party_start.matches() && Integer.parseInt(party_start.group(1)) == 1) {
-				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.ERROR_COLOUR + "You cannot reparty yourself."));
-			}
-            else if (leader.matches() && !(leader.group(1).equals(player.getName()))) {
-				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.ERROR_COLOUR + "You are not party leader."));
-			}
-			else if (message.contains("Couldn't find a player") || message.contains("You cannot invite that player")) {
-				RepartyCommand.repartyFailList.add(RepartyCommand.currentMember);
-			}
-			else {
-				while (members.find()) {
-					String partyMember = members.group(1);
-					if (!partyMember.equals(player.getName())) {
-						RepartyCommand.party.add(partyMember);
-					}
-				}
-			}
-			event.setCanceled(true);
+        // Getting party
+        if (RepartyCommand.gettingParty) {
+            if (message.contains("-----")) {
+                switch(RepartyCommand.Delimiter) {
+                    case 0:
+                        System.out.println("Get Party Delimiter Cancelled");
+                        RepartyCommand.Delimiter++;
+                        event.setCanceled(true);
+                        return;
+                    case 1:
+                        System.out.println("Done querying party");
+                        RepartyCommand.gettingParty = false;
+                        RepartyCommand.Delimiter = 0;
+                        event.setCanceled(true);
+                        return;
+                }
+            }else if (message.startsWith("Party M") || message.startsWith("Party Leader")){
+                EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+
+                Pattern party_start_pattern = Pattern.compile("^Party Members \\((\\d+)\\)$");
+                Pattern leader_pattern = Pattern.compile("^Party Leader: (?:\\[.+?] )?(\\w+) ●$");
+                Pattern members_pattern = Pattern.compile(" (?:\\[.+?] )?(\\w+) ●");
+                Matcher party_start = party_start_pattern.matcher(message);
+                Matcher leader = leader_pattern.matcher(message);
+                Matcher members = members_pattern.matcher(message);
+
+                if (party_start.matches() && Integer.parseInt(party_start.group(1)) == 1) {
+                    player.addChatMessage(new ChatComponentText(DankersSkyblockMod.ERROR_COLOUR + "You cannot reparty yourself."));
+                    RepartyCommand.partyThread.interrupt();
+                } else if (leader.matches() && !(leader.group(1).equals(player.getName()))) {
+                    player.addChatMessage(new ChatComponentText(DankersSkyblockMod.ERROR_COLOUR + "You are not party leader."));
+                    RepartyCommand.partyThread.interrupt();
+                } else {
+                    while (members.find()) {
+                        String partyMember = members.group(1);
+                        if (!partyMember.equals(player.getName())) {
+                            RepartyCommand.party.add(partyMember);
+                            System.out.println(partyMember);
+                        }
+                    }
+                }
+                event.setCanceled(true);
+                return;
+            }
+        }
+        // Disbanding party
+        if (RepartyCommand.disbanding) {
+            if (message.contains("-----")) {
+                switch (RepartyCommand.Delimiter) {
+                    case 0:
+                        System.out.println("Disband Delimiter Cancelled");
+                        RepartyCommand.Delimiter++;
+                        event.setCanceled(true);
+                        return;
+                    case 1:
+                        System.out.println("Done disbanding");
+                        RepartyCommand.disbanding = false;
+                        RepartyCommand.Delimiter = 0;
+                        event.setCanceled(true);
+                        return;
+                }
+            } else if (message.endsWith("has disbanded the party!")) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+        // Inviting
+        if (RepartyCommand.inviting) {
+            if (message.contains("-----")) {
+                switch (RepartyCommand.Delimiter) {
+                    case 1:
+                        event.setCanceled(true);
+                        RepartyCommand.Delimiter = 0;
+                        System.out.println("Player Invited!");
+                        RepartyCommand.inviting = false;
+                        return;
+                    case 0:
+                        RepartyCommand.Delimiter++;
+                        event.setCanceled(true);
+                        return;
+                }
+            } else if (message.endsWith(" to the party! They have 60 seconds to accept.")) {
+                Pattern invitePattern = Pattern.compile("(?:(?:\\[.+?] )?(?:\\w+) invited )(?:\\[.+?] )?(\\w+)");
+                Matcher invitee = invitePattern.matcher(message);
+                if (invitee.find()) {
+                    System.out.println("" + invitee.group(1) + ": " + RepartyCommand.repartyFailList.remove(invitee.group(1)));
+                }
+                event.setCanceled(true);
+                return;
+            } else if (message.contains("Couldn't find a player") || message.contains("You cannot invite that player")) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+        // Fail Inviting
+        if (RepartyCommand.failInviting) {
+            if (message.contains("-----")) {
+                switch (RepartyCommand.Delimiter) {
+                    case 1:
+                        event.setCanceled(true);
+                        RepartyCommand.Delimiter = 0;
+                        System.out.println("Player Invited!");
+                        RepartyCommand.inviting = false;
+                        return;
+                    case 0:
+                        RepartyCommand.Delimiter++;
+                        event.setCanceled(true);
+                        return;
+                }
+            } else if (message.endsWith(" to the party! They have 60 seconds to accept.")) {
+                Pattern invitePattern = Pattern.compile("(?:(?:\\[.+?] )?(?:\\w+) invited )(?:\\[.+?] )?(\\w+)");
+                Matcher invitee = invitePattern.matcher(message);
+                if (invitee.find()) {
+                    System.out.println("" + invitee.group(1) + ": " + RepartyCommand.repartyFailList.remove(invitee.group(1)));
+                }
+                event.setCanceled(true);
+                return;
+            } else if (message.contains("Couldn't find a player") || message.contains("You cannot invite that player")) {
+                event.setCanceled(true);
+                return;
+            }
         }
 
     	if (!Utils.inSkyblock) return;
     	
     	// Action Bar
     	if (event.type == 2) {
-			EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-			String[] actionBarSections = event.message.getUnformattedText().split(" {3,}");
+            String[] actionBarSections = event.message.getUnformattedText().split(" {3,}");
 			
 			for (String section : actionBarSections) {
     			if (section.contains("+") && section.contains("/") && section.contains("(")) {
@@ -463,7 +644,7 @@ public class DankersSkyblockMod {
 						}
 						timeSinceGained = System.currentTimeMillis() / 1000;
 						
-						int limit = section.contains("Farming") || section.contains("Enchanting") ? 60 : 50;
+						int limit = section.contains("Farming") || section.contains("Enchanting") || section.contains("Mining") ? 60 : 50;
 						double currentXP = Double.parseDouble(section.substring(section.indexOf("(") + 1, section.indexOf("/")).replace(",", ""));
     					int xpToLevelUp = Integer.parseInt(section.substring(section.indexOf("/") + 1, section.indexOf(")")).replaceAll(",", ""));
     					xpLeft = xpToLevelUp - currentXP;
@@ -531,7 +712,7 @@ public class DankersSkyblockMod {
     					double currentXp = Double.parseDouble(section.substring(section.indexOf("(") + 1, section.indexOf("/")).replace(",", ""));
     					int limit;
     					int totalXp;
-    					if (section.contains("Farming") || section.contains("Enchanting")) {
+    					if (section.contains("Farming") || section.contains("Enchanting") || section.contains("Mining")) {
     						limit = 60;
     						totalXp = 111672425;
     					} else {
@@ -550,10 +731,84 @@ public class DankersSkyblockMod {
     		}
     		return;
     	}
-        
+
+        if (ToggleCommand.burrowWaypointsToggled && message.contains("You dug out a Griffin Burrow") || message.contains("You finished the Griffin burrow chain!")) {
+            if (GriffinBurrowUtils.lastDugBurrow != null) {
+                GriffinBurrowUtils.dugBurrows.add(GriffinBurrowUtils.lastDugBurrow);
+                GriffinBurrowUtils.burrows.removeIf(burrow -> burrow.getBlockPos().equals(GriffinBurrowUtils.lastDugBurrow));
+            }
+        }
+
+        if (ToggleCommand.fetchurToggled && message.contains("[NPC]") && message.contains("Fetchur")) {
+            String solution = fetchurItems.keySet().stream().filter(message::contains).findFirst().map(fetchurItems::get).orElse(null);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (solution != null) {
+                    mc.thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Fetchur needs: " + ANSWER_COLOUR + EnumChatFormatting.BOLD + solution + EnumChatFormatting.RESET + MAIN_COLOUR + "!"));
+                } else {
+                    if (message.contains("its") || message.contains("theyre")) {
+                        System.out.println("Missing Fetchur item: " + message);
+                        mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod couldn't determine the Fetchur item."));
+                    }
+                }
+
+            }).start();
+        }
+
+        if (ToggleCommand.puzzlerToggled && message.contains("[NPC]") && message.contains("Puzzler")) {
+            if (message.contains("Nice")) {
+                puzzlerSolution = null;
+                return;
+            }
+            if (message.contains("Wrong") || message.contains("Come") || (!message.contains("▶") && !message.contains("▲") && !message.contains("◀") && !message.contains("▼"))) return;
+            if (ScoreboardHandler.getSidebarLines().stream().anyMatch(line -> ScoreboardHandler.cleanSB(line).contains("Dwarven Mines"))) {
+                puzzlerSolution = new BlockPos(181, 195, 135);
+                String msg = message.substring(15).trim();
+                Matcher matcher = Pattern.compile("([▶▲◀▼]+)").matcher(message);
+                if (matcher.find()) {
+                    String sequence = matcher.group(1).trim();
+                    if (sequence.length() != msg.length()) {
+                        System.out.println(String.format("%s - %s | %s - %s", sequence, msg, sequence.length(), message.length()));
+                    }
+                    for (char c : sequence.toCharArray()) {
+                        switch (String.valueOf(c)) {
+                            case "▲":
+                                puzzlerSolution = puzzlerSolution.south();
+                                break;
+                            case "▶":
+                                puzzlerSolution = puzzlerSolution.west();
+                                break;
+                            case "◀":
+                                puzzlerSolution = puzzlerSolution.east();
+                                break;
+                            case "▼":
+                                puzzlerSolution = puzzlerSolution.north();
+                                break;
+                            default:
+                                System.out.println("Invalid Puzzler character: " + c);
+                        }
+                    }
+                    System.out.println("Puzzler Solution: " + puzzlerSolution);
+                    mc.thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Mine the block highlighted in " + EnumChatFormatting.RED + EnumChatFormatting.BOLD + "RED" + MAIN_COLOUR + "!"));
+                }
+            }
+        }
+
+        if (ToggleCommand.hiddenJerryAlertToggled && message.contains("☺") && message.contains("Jerry") && !message.contains("Jerry Box")) {
+    	    Pattern jerryType = Pattern.compile("(\\w+)(?=\\s+Jerry)");
+    	    Matcher matcher = jerryType.matcher(event.message.getFormattedText());
+    	    if (matcher.find()) {
+    	        String colour = matcher.group(1);
+    	        Utils.createTitle("\u00a7" + colour.toUpperCase() + " JERRY!", 3);
+            }
+        }
+
         if (ToggleCommand.bonzoTimerToggled && Utils.inDungeons && message.contains("Bonzo's Mask") && message.contains("saved your life!")) {
             double usedTime = System.currentTimeMillis() / 1000;
-            Minecraft mc = Minecraft.getMinecraft();
             EntityPlayerSP player = mc.thePlayer;
             ItemStack bonzoMask = player.getCurrentArmor(3);
             if (bonzoMask != null && bonzoMask.getItem() == Items.skull) {
@@ -569,27 +824,33 @@ public class DankersSkyblockMod {
             }
         }
 
+        if (message.contains("PUZZLE SOLVED!")) {
+            if (message.contains("wasn't fooled by ")) {
+                riddleNPC = null;
+                riddleChest = null;
+            }
+        }
+
         // Dungeon chat spoken by an NPC, containing :
         if (ToggleCommand.threeManToggled && Utils.inDungeons && message.contains("[NPC]")) {
             for (String solution : riddleSolutions) {
                 if (message.contains(solution)) {
                     String npcName = message.substring(message.indexOf("]") + 2, message.indexOf(":"));
-                    Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ANSWER_COLOUR + EnumChatFormatting.BOLD + StringUtils.stripControlCodes(npcName) + MAIN_COLOUR + " has the blessing."));
+                    riddleNPC = npcName;
+                    mc.thePlayer.addChatMessage(new ChatComponentText(ANSWER_COLOUR + EnumChatFormatting.BOLD + StringUtils.stripControlCodes(npcName) + MAIN_COLOUR + " has the blessing."));
                     break;
                 }
             }
         }
 
         if (ToggleCommand.necronNotificationsToggled && Utils.inDungeons && message.contains("[BOSS] Necron:")) {
-            Minecraft mc = Minecraft.getMinecraft();
             World world = mc.theWorld;
             if (message.contains("You tricked me!") || message.contains("That beam, it hurts! IT HURTS!!")) {
                 Utils.createTitle(EnumChatFormatting.RED + "NECRON STUCK!", 2);
             } else if (message.contains("STOP USING MY FACTORY AGAINST ME!") || message.contains("OOF") || message.contains("ANOTHER TRAP!! YOUR TRICKS ARE FUTILE!") || message.contains("SERIOUSLY? AGAIN?!") || message.contains("STOP!!!!!")) {
                 List<EntityArmorStand> necronLabels = world.getEntities(EntityArmorStand.class, (entity -> {
                     if (!entity.hasCustomName()) return false;
-                    if (!entity.getCustomNameTag().contains("Necron")) return false;
-                    return true;
+                    return entity.getCustomNameTag().contains("Necron");
                 }));
                 if (necronLabels.size() == 0) {
                     Utils.createTitle(EnumChatFormatting.WHITE + "NECRON STUNNED!", 2);
@@ -611,10 +872,10 @@ public class DankersSkyblockMod {
                                 Utils.createTitle(EnumChatFormatting.YELLOW + "YELLOW PILLAR!", 2);
                                 break;
                             case 5:
-                                Utils.createTitle(EnumChatFormatting.GREEN + "LIME PILLAR!", 2);
+                                Utils.createTitle(EnumChatFormatting.DARK_GREEN + "GREEN PILLAR!", 2);
                                 break;
                             case 11:
-                                Utils.createTitle(EnumChatFormatting.BLUE + "BLUE PILLAR!", 2);
+                                Utils.createTitle(EnumChatFormatting.DARK_PURPLE + "PURPLE PILLAR!", 2);
                                 break;
                             default:
                                 Utils.createTitle(EnumChatFormatting.WHITE + "NECRON STUNNED!", 2);
@@ -656,6 +917,16 @@ public class DankersSkyblockMod {
             event.setCanceled(true);
             return;
         }
+        // Ability Cooldown
+        if (!ToggleCommand.cooldownMessages && message.contains("This ability is currently on cooldown for") && message.contains("more second")) {
+          event.setCanceled(true);
+          return;
+        }
+        // Out of mana messages
+        if (!ToggleCommand.manaMessages && message.contains("You do not have enough mana to do this!")) {
+          event.setCanceled(true);
+          return;
+        }
         // Implosion
         if (!ToggleCommand.implosionMessages) {
             if (message.contains("Your Implosion hit ") || message.contains("There are blocks in the way")) {
@@ -665,6 +936,8 @@ public class DankersSkyblockMod {
         }
 
         if (ToggleCommand.oruoToggled && Utils.inDungeons) {
+            if (message.contains("Oruo the Omniscient") && message.contains("correctly")) triviaAnswer = null;
+
         	if (message.contains("What SkyBlock year is it?")) {
                 double currentTime = System.currentTimeMillis() /1000L;
 
@@ -683,10 +956,12 @@ public class DankersSkyblockMod {
         	
         	// Set wrong answers to red and remove click events
         	if (triviaAnswers != null && (message.contains("ⓐ") || message.contains("ⓑ") || message.contains("ⓒ"))) {
-        		boolean isSolution = false;
+        		String answer = null;
+        	    boolean isSolution = false;
         		for (String solution : triviaAnswers) {
         			if (message.contains(solution)) {
         				isSolution = true;
+        				answer = solution;
         				break;
 					}
         		}
@@ -695,10 +970,12 @@ public class DankersSkyblockMod {
         			String option = message.substring(6);
         			event.message = new ChatComponentText("     " + EnumChatFormatting.GOLD + letter + TRIVIA_WRONG_ANSWER_COLOUR + option);
         			return;
-        		}
+        		} else {
+        		    triviaAnswer = answer;
+                }
         	}
         }
-    	
+
 		if (ToggleCommand.gpartyToggled) {
 			if (message.contains(" has invited all members of ")) {
 				try {
@@ -1363,7 +1640,7 @@ public class DankersSkyblockMod {
 					lastMaddoxTime = System.currentTimeMillis() / 1000;
 				}
 			}
-			if (ToggleCommand.chatMaddoxToggled) Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Open chat then click anywhere on-screen to open Maddox"));
+			if (ToggleCommand.chatMaddoxToggled) mc.thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Open chat then click anywhere on-screen to open Maddox"));
 		}
 		
 		// Spirit Bear alerts
@@ -1374,7 +1651,7 @@ public class DankersSkyblockMod {
 
     @SubscribeEvent
     public void renderPlayerInfo(final RenderGameOverlayEvent.Post event) {
-        if (usingLabymod && !(Minecraft.getMinecraft().ingameGUI instanceof GuiIngameForge)) return;
+        if (usingLabymod && !(mc.ingameGUI instanceof GuiIngameForge)) return;
         if (event.type != RenderGameOverlayEvent.ElementType.EXPERIENCE && event.type != RenderGameOverlayEvent.ElementType.JUMPBAR)
             return;
         renderEverything();
@@ -1389,9 +1666,7 @@ public class DankersSkyblockMod {
     }
 
     public void renderEverything() {
-        if (Minecraft.getMinecraft().currentScreen instanceof EditLocationsGui) return;
-
-        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.currentScreen instanceof EditLocationsGui) return;
 
         if (ToggleCommand.coordsToggled) {
             EntityPlayer player = mc.thePlayer;
@@ -1473,7 +1748,7 @@ public class DankersSkyblockMod {
                 if (nextBonzoUse - timeNow < 0) {
                     bonzoText = EnumChatFormatting.GREEN + "READY";
                 } else {
-                    bonzoText = BONZO_COLOR + Utils.getTimeBetween(timeNow, nextBonzoUse);
+                    bonzoText = BONZO_COLOUR + Utils.getTimeBetween(timeNow, nextBonzoUse);
                 }
                 new TextRenderer(mc, bonzoText, MoveCommand.bonzoTimerXY[0] + 20, MoveCommand.bonzoTimerXY[1] + 5, 1);
 
@@ -2470,7 +2745,6 @@ public class DankersSkyblockMod {
         if (event.toolTip == null) return;
 
         ItemStack item = event.itemStack;
-        Minecraft mc = Minecraft.getMinecraft();
         EntityPlayerSP player = mc.thePlayer;
 
         if (ToggleCommand.goldenToggled) {
@@ -2485,12 +2759,41 @@ public class DankersSkyblockMod {
                 if (tags != null) {
                     if (tags.hasKey("expertise_kills")) {
                         int index = 4;
-                        if (!Minecraft.getMinecraft().gameSettings.advancedItemTooltips) index -= 2;
+                        if (!mc.gameSettings.advancedItemTooltips) index -= 2;
 
                         event.toolTip.add(event.toolTip.size() - index, "");
                         event.toolTip.add(event.toolTip.size() - index, "Expertise Kills: " + EnumChatFormatting.RED + tags.getInteger("expertise_kills"));
                         if (Utils.expertiseKillsLeft(tags.getInteger("expertise_kills")) != -1) {
                             event.toolTip.add(event.toolTip.size() - index, Utils.expertiseKillsLeft(tags.getInteger("expertise_kills")) + " kills to tier up!");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (ToggleCommand.soulEaterLoreToggled) {
+            if (item.hasTagCompound()) {
+                NBTTagCompound tags = item.getSubCompound("ExtraAttributes", false);
+                if (tags != null) {
+                    if (tags.hasKey("ultimateSoulEaterData")) {
+
+                        int bonus = tags.getInteger("ultimateSoulEaterData");
+
+                        boolean foundStrength = false;
+
+                        for (int i = 0; i < event.toolTip.size(); i++) {
+                            String line = event.toolTip.get(i);
+                            if (line.contains("§7Strength:")) {
+                                event.toolTip.add(i + 1, EnumChatFormatting.DARK_RED + " Soul Eater Bonus: " + EnumChatFormatting.GREEN + bonus);
+                                foundStrength = true;
+                                break;
+                            }
+                        }
+
+                        if (!foundStrength) {
+                            int index = mc.gameSettings.advancedItemTooltips ? 4 : 2;
+                            event.toolTip.add(event.toolTip.size() - index, "");
+                            event.toolTip.add(event.toolTip.size() - index, EnumChatFormatting.DARK_RED + " Soul Eater Bonus: " + EnumChatFormatting.GREEN + bonus);
                         }
                     }
                 }
@@ -2505,7 +2808,7 @@ public class DankersSkyblockMod {
             if (ToggleCommand.superpairsToggled && chestName.contains("Superpairs (")) {
                 if (Item.getIdFromItem(item.getItem()) != 95) return;
                 if (item.getDisplayName().contains("Click any button") || item.getDisplayName().contains("Click a second button") || item.getDisplayName().contains("Next button is instantly rewarded") || item.getDisplayName().contains("Stained Glass")) {
-                    Slot slot = ((GuiChest) mc.currentScreen).getSlotUnderMouse();
+                    Slot slot = Utils.getSlotUnderMouse((GuiChest) mc.currentScreen);
                     ItemStack itemStack = experimentTableSlots[slot.getSlotIndex()];
                     if (itemStack == null) return;
                     String itemName = itemStack.getDisplayName();
@@ -2530,13 +2833,13 @@ public class DankersSkyblockMod {
         if (!Utils.inSkyblock) return;
         if (event.toolTip == null) return;
 
-        Minecraft mc = Minecraft.getMinecraft();
         EntityPlayerSP player = mc.thePlayer;
 
         if (mc.currentScreen instanceof GuiChest) {
             ContainerChest chest = (ContainerChest) player.openContainer;
             IInventory inv = chest.getLowerChestInventory();
             String chestName = inv.getDisplayName().getUnformattedText();
+            ItemStack item = event.itemStack;
 
             if (ToggleCommand.hideTooltipsInExperimentAddonsToggled && (chestName.startsWith("Ultrasequencer (") || chestName.startsWith("Chronomatron ("))) {
                 event.toolTip.clear();
@@ -2546,19 +2849,42 @@ public class DankersSkyblockMod {
                 event.toolTip.clear();
             }
 
+            if (ToggleCommand.spiritLeapNamesToggled && chestName.equals("Spirit Leap")) {
+                if (item.getItem() == Item.getItemFromBlock(Blocks.stained_glass_pane)) {
+                    event.toolTip.clear();
+                }
+            }
+
         }
     }
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != Phase.START) return;
+        checkKeyBindings();
 
-        Minecraft mc = Minecraft.getMinecraft();
         World world = mc.theWorld;
         EntityPlayerSP player = mc.thePlayer;
 
-        // Checks every second
         tickAmount++;
+
+        //Checks every minute
+        if (tickAmount % 1200 == 0) {
+            if (ToggleCommand.burrowWaypointsToggled && Utils.inSkyblock && player != null) {
+                for (int i = 0; i < 8; i++) {
+                    ItemStack hotbarItem = player.inventory.getStackInSlot(i);
+                    if (hotbarItem == null) continue;
+                    if (hotbarItem.getDisplayName().contains("Ancestral Spade")) {
+                        player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Looking for burrows"));
+                        GriffinBurrowUtils.refreshBurrows();
+                        break;
+                    }
+                }
+            }
+            tickAmount = 0;
+        }
+
+        // Checks every second
         if (tickAmount % 20 == 0) {
             if (player != null) {
                 Utils.checkForSkyblock();
@@ -2611,6 +2937,18 @@ public class DankersSkyblockMod {
                 ConfigHandler.writeStringConfig("misc", "display", DisplayCommand.display);
             }
 
+            if (ToggleCommand.burrowWaypointsToggled && Utils.inSkyblock && GriffinBurrowUtils.burrows.size() == 0 && GriffinBurrowUtils.dugBurrows.size() == 0 && player != null) {
+                for (int i = 0; i < 8; i++) {
+                    ItemStack hotbarItem = player.inventory.getStackInSlot(i);
+                    if (hotbarItem == null) continue;
+                    if (hotbarItem.getDisplayName().contains("Ancestral Spade")) {
+                        player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Looking for burrows"));
+                        GriffinBurrowUtils.refreshBurrows();
+                        break;
+                    }
+                }
+            }
+
             if (ToggleCommand.creeperToggled && Utils.inDungeons && world != null && player != null) {
                 double x = player.posX;
                 double y = player.posY;
@@ -2646,6 +2984,53 @@ public class DankersSkyblockMod {
                 } else {
                     drawCreeperLines = false;
                 }
+            }
+
+            if (ToggleCommand.onlyShowCorrectBlazeToggled && Utils.inDungeons && blazeMode == 0 && (lowestBlazeLabel != null || highestBlazeLabel != null) && world != null && player != null) {
+                new Thread(() -> {
+                    List<EntityBlaze> blazes = mc.theWorld.getEntities(EntityBlaze.class, (blaze) -> player.getDistanceToEntity(blaze) < 100);
+                    if (blazes.size() > 10) {
+                        System.out.println("More than 10 blazes, was there an update?");
+                    } else if (blazes.size() > 0) {
+                        int diffY = 5 * (10 - blazes.size());
+                        EntityBlaze blaze = blazes.get(0);
+                        for (int x = (int) (blaze.posX - 13); x <= blaze.posX + 13; x++) {
+                            for (int z = (int) (blaze.posZ - 13); z <= blaze.posZ + 13; z++) {
+                                BlockPos blockPos1 = new BlockPos(x, 70 + diffY, z);
+                                BlockPos blockPos2 = new BlockPos(x, 69 - diffY, z);
+                                if (world.getBlockState(blockPos1).getBlock() == Blocks.chest) {
+                                    if (world.getBlockState(blockPos1.up()).getBlock() == Blocks.iron_bars) {
+                                        blazeChest = blockPos1;
+                                        if (blazes.size() < 10) {
+                                            blazeMode = -1;
+                                            System.out.println("Block scanning determined lowest -> highest");
+                                        }
+                                        break;
+                                    }
+                                } else if (world.getBlockState(blockPos2).getBlock() == Blocks.chest) {
+                                    if (world.getBlockState(blockPos2.up()).getBlock() == Blocks.iron_bars) {
+                                        blazeChest = blockPos2;
+                                        if (blazes.size() < 10) {
+                                            blazeMode = 1;
+                                            System.out.println("Block scanning determined highest -> lowest");
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (blazeChest != null && blazes.size() == 10) {
+                            if (world.getBlockState(blazeChest.down()).getBlock() == Blocks.stone) {
+                                System.out.println("Bottom block scanning determined lowest -> highest");
+                                blazeMode = -1;
+                            } else {
+                                System.out.println("Bottom block scanning determined highest -> lowest");
+                                blazeMode = 1;
+                            }
+                        }
+                    }
+                }).start();
             }
 
             if (ToggleCommand.waterToggled && Utils.inDungeons && world != null && player != null) {
@@ -2880,37 +3265,67 @@ public class DankersSkyblockMod {
                     }
                 }
             }
-
-            tickAmount = 0;
         }
 
         // Checks 5 times per second
         if (tickAmount % 4 == 0) {
             if (ToggleCommand.blazeToggled && Utils.inDungeons && world != null) {
+
+                if (lowestBlazeLabel != null && highestBlazeLabel != null && blazeMode == 0 && shotArrowNearBlaze) {
+                    if (lowestBlazeLabel.isDead) {
+                        System.out.println("Lowest Blaze is Dead");
+                        blazeMode = -1;
+                    }
+                    if (highestBlazeLabel.isDead) {
+                        System.out.println("Highest Blaze is Dead");
+                        blazeMode = 1;
+                    }
+                }
+
                 List<Entity> entities = world.getLoadedEntityList();
                 int highestHealth = 0;
+                highestBlazeLabel = null;
                 highestBlaze = null;
                 int lowestHealth = 99999999;
+                lowestBlazeLabel = null;
                 lowestBlaze = null;
 
                 for (Entity entity : entities) {
-                    if (entity.getName().contains("Blaze") && entity.getName().contains("/")) {
+                    if (entity instanceof EntityArmorStand && entity.getName().contains("Blaze") && entity.getName().contains("/")) {
                         String blazeName = StringUtils.stripControlCodes(entity.getName());
                         try {
                             int health = Integer.parseInt(blazeName.substring(blazeName.indexOf("/") + 1, blazeName.length() - 1));
                             if (health > highestHealth) {
                                 highestHealth = health;
-                                highestBlaze = entity;
+                                highestBlazeLabel = (EntityArmorStand) entity;
                             }
                             if (health < lowestHealth) {
                                 lowestHealth = health;
-                                lowestBlaze = entity;
+                                lowestBlazeLabel = (EntityArmorStand) entity;
                             }
                         } catch (NumberFormatException ex) {
                             ex.printStackTrace();
                         }
                     }
                 }
+
+                if (blazeMode == 0 && (highestBlazeLabel != null || lowestBlazeLabel != null)) {
+                    new Thread(() -> {
+                        ScoreboardHandler.getSidebarLines().forEach(l -> {
+                            String line = ScoreboardHandler.cleanSB(l);
+                            if (line.contains("-96,-204")) {
+                                blazeMode = -1;
+                                System.out.println("Scoreboard determined lowest -> highest");
+                                mc.thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Shoot the blazes from " + EnumChatFormatting.RED + EnumChatFormatting.BOLD + "lowest to highest" + EnumChatFormatting.RESET + MAIN_COLOUR + "!"));
+                            } else if (line.contains("-60,-204")) {
+                                blazeMode = 1;
+                                System.out.println("Scoreboard determined highest -> lowest");
+                                mc.thePlayer.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Shoot the blazes from " + EnumChatFormatting.DARK_GREEN + EnumChatFormatting.BOLD + "highest to lowest" + EnumChatFormatting.RESET + MAIN_COLOUR + "!"));
+                            }
+                        });
+                    }).start();
+                }
+
             }
         }
 
@@ -2956,7 +3371,7 @@ public class DankersSkyblockMod {
                     if (Item.getIdFromItem(itemStack.getItem()) == 95 || Item.getIdFromItem(itemStack.getItem()) == 160) continue;
                     if (itemName.contains("Instant Find") || itemName.contains("Gained +")) continue;
                     if (itemName.contains("Enchanted Book")) {
-                        itemName = itemStack.getTooltip(mc.thePlayer, false).get(3);
+                        itemName = StringUtils.stripControlCodes(itemStack.getTooltip(mc.thePlayer, false).get(3));
                     }
                     if (itemStack.stackSize > 1) {
                         itemName = itemStack.stackSize + " " + itemName;
@@ -3006,11 +3421,11 @@ public class DankersSkyblockMod {
         }
     }
 
+
     // Delay GUI by 1 tick
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (guiToOpen != null) {
-            Minecraft mc = Minecraft.getMinecraft();
             if (guiToOpen.startsWith("dankergui")) {
                 int page = Character.getNumericValue(guiToOpen.charAt(guiToOpen.length() - 1));
                 mc.displayGuiScreen(new DankerGui(page));
@@ -3046,18 +3461,50 @@ public class DankersSkyblockMod {
             if (!LocationHandler.getLocation().equals("mining_3")) return;
             DarkMonolithUtils.drawWaypoint(DarkMonolithUtils.findMonolith(), event.partialTicks);
         }
-        if (ToggleCommand.blazeToggled) {
-            if (lowestBlaze != null) {
-                BlockPos stringPos = new BlockPos(lowestBlaze.posX, lowestBlaze.posY + 1, lowestBlaze.posZ);
+        if (ToggleCommand.puzzlerToggled && puzzlerSolution != null && !puzzlerSolution.equals(new BlockPos(181, 195, 135))) {
+            Utils.draw3DBox(new AxisAlignedBB(puzzlerSolution, puzzlerSolution.add(1, 1, 1)), new Color(255, 0, 0).getRGB(), event.partialTicks);
+        }
+
+        if (ToggleCommand.burrowWaypointsToggled && GriffinBurrowUtils.burrows.size() > 0) {
+            List<GriffinBurrowUtils.Burrow> burrows = Lists.newArrayList(GriffinBurrowUtils.burrows);
+            burrows.forEach(burrow -> {
+                burrow.drawWaypoint(event.partialTicks);
+            });
+        }
+
+        if (ToggleCommand.simonToggled && simonNumberNeeded < simonBlockOrder.size()) {
+            BlockPos pos = simonBlockOrder.get(simonNumberNeeded);
+            Utils.draw3DBox(new AxisAlignedBB(pos.west(), pos.add(1, 1, 1)), new Color(255, 0, 0).getRGB(), event.partialTicks);
+        }
+
+        if (ToggleCommand.blazeToggled && Utils.inDungeons) {
+            if (lowestBlazeLabel != null && ((ToggleCommand.onlyShowCorrectBlazeToggled && blazeMode == -1) || !ToggleCommand.onlyShowCorrectBlazeToggled || blazeMode == 0)) {
+                BlockPos stringPos = new BlockPos(lowestBlazeLabel.posX, lowestBlazeLabel.posY + 1, lowestBlazeLabel.posZ);
                 Utils.draw3DString(stringPos, EnumChatFormatting.BOLD + "Smallest", LOWEST_BLAZE_COLOUR, event.partialTicks);
-                AxisAlignedBB aabb = new AxisAlignedBB(lowestBlaze.posX - 0.5, lowestBlaze.posY - 2, lowestBlaze.posZ - 0.5, lowestBlaze.posX + 0.5, lowestBlaze.posY, lowestBlaze.posZ + 0.5);
+                AxisAlignedBB aabb = new AxisAlignedBB(lowestBlazeLabel.posX - 0.5, lowestBlazeLabel.posY - 2, lowestBlazeLabel.posZ - 0.5, lowestBlazeLabel.posX + 0.5, lowestBlazeLabel.posY, lowestBlazeLabel.posZ + 0.5);
                 Utils.draw3DBox(aabb, LOWEST_BLAZE_COLOUR, event.partialTicks);
+                for (Entity entity : mc.theWorld.loadedEntityList) {
+                    if (entity instanceof EntityBlaze) {
+                        if (entity.getEntityBoundingBox().intersectsWith(aabb)) {
+                            lowestBlaze = (EntityBlaze) entity;
+                            break;
+                        }
+                    }
+                }
             }
-            if (highestBlaze != null) {
-                BlockPos stringPos = new BlockPos(highestBlaze.posX, highestBlaze.posY + 1, highestBlaze.posZ);
+            if (highestBlazeLabel != null  && ((ToggleCommand.onlyShowCorrectBlazeToggled && blazeMode == 1) || !ToggleCommand.onlyShowCorrectBlazeToggled || blazeMode == 0)) {
+                BlockPos stringPos = new BlockPos(highestBlazeLabel.posX, highestBlazeLabel.posY + 1, highestBlazeLabel.posZ);
                 Utils.draw3DString(stringPos, EnumChatFormatting.BOLD + "Biggest", HIGHEST_BLAZE_COLOUR, event.partialTicks);
-                AxisAlignedBB aabb = new AxisAlignedBB(highestBlaze.posX - 0.5, highestBlaze.posY - 2, highestBlaze.posZ - 0.5, highestBlaze.posX + 0.5, highestBlaze.posY, highestBlaze.posZ + 0.5);
+                AxisAlignedBB aabb = new AxisAlignedBB(highestBlazeLabel.posX - 0.5, highestBlazeLabel.posY - 2, highestBlazeLabel.posZ - 0.5, highestBlazeLabel.posX + 0.5, highestBlazeLabel.posY, highestBlazeLabel.posZ + 0.5);
                 Utils.draw3DBox(aabb, HIGHEST_BLAZE_COLOUR, event.partialTicks);
+                for (Entity entity : mc.theWorld.loadedEntityList) {
+                    if (entity instanceof EntityBlaze) {
+                        if (entity.getEntityBoundingBox().intersectsWith(aabb)) {
+                            highestBlaze = (EntityBlaze) entity;
+                            break;
+                        }
+                    }
+                }
             }
         }
         if (ToggleCommand.creeperToggled && drawCreeperLines && !creeperLines.isEmpty()) {
@@ -3068,48 +3515,93 @@ public class DankersSkyblockMod {
         if (ToggleCommand.ticTacToeToggled && correctTicTacToeButton != null) {
             Utils.draw3DBox(correctTicTacToeButton, 0x40FF40, event.partialTicks);
         }
+        if (ToggleCommand.threeManToggled && riddleNPC != null && Utils.inDungeons) {
+            if (riddleChest == null) {
+                EntityArmorStand riddleLabel = mc.theWorld.getEntities(EntityArmorStand.class, (entity -> {
+                    if (entity == null) return false;
+                    if (!entity.hasCustomName()) return false;
+                    return entity.getCustomNameTag().contains(riddleNPC);
+                })).stream().findFirst().orElse(null);
+                if (riddleLabel != null) {
+                    System.out.println("Chest Finder: Found Riddle NPC " + riddleLabel.getCustomNameTag() + " at " + riddleLabel.posX + ", " + riddleLabel.posY + ", " + riddleLabel.posY);
+                    BlockPos potentialPos = new BlockPos(Math.floor(riddleLabel.posX), 69, Math.floor(riddleLabel.posZ));
+                    if (mc.theWorld.getBlockState(potentialPos.north()).getBlock() == Blocks.chest) {
+                        riddleChest = potentialPos.north();
+                        System.out.print("Correct position is at: " + riddleChest.getX() + ", " + riddleChest.getY() + riddleChest.getZ());
+                    }
+                    else if (mc.theWorld.getBlockState(potentialPos.south()).getBlock() == Blocks.chest) {
+                        riddleChest = potentialPos.south();
+                        System.out.print("Correct position is at: " + riddleChest);
+                    }
+                    else if (mc.theWorld.getBlockState(potentialPos.east()).getBlock() == Blocks.chest) {
+                        riddleChest = potentialPos.east();
+                        System.out.print("Correct position is at: " + riddleChest);
+                    }
+                    else if (mc.theWorld.getBlockState(potentialPos.west()).getBlock() == Blocks.chest) {
+                        riddleChest = potentialPos.west();
+                        System.out.print("Correct position is at: " + riddleChest);
+                    }
+                }
+            } else {
+                //Utils.draw3DBox(new AxisAlignedBB(riddleChest, riddleChest.add(1, 1, 1)), new Color(255, 0, 0).getRGB(), event.partialTicks);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onRenderEntityPre(RenderLivingEvent.Pre event) {
+        if (ToggleCommand.lividSolverToggled && Utils.inDungeons && foundLivid) {
+            String name = event.entity.getName();
+            if (event.entity instanceof EntityArmorStand && !event.entity.isEntityEqual(livid) && name.contains("Livid") && name.length() > 5 && name.charAt(1) == name.charAt(5)) {
+                event.setCanceled(true);
+            }
+        }
     }
 
     @SubscribeEvent
     public void onInteract(PlayerInteractEvent event) {
-        if (!Utils.inSkyblock || Minecraft.getMinecraft().thePlayer != event.entityPlayer) return;
+        if (!Utils.inSkyblock || mc.thePlayer != event.entityPlayer) return;
+        EntityPlayer player = event.entityPlayer;
         ItemStack item = event.entityPlayer.getHeldItem();
         if (item == null) return;
 
-        if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
-
-            Block block = Minecraft.getMinecraft().theWorld.getBlockState(event.pos).getBlock();
-
-            if (ToggleCommand.blockBreakingFarmsToggled) {
-                ArrayList<Item> tools = new ArrayList<>(Arrays.asList(
-                        Items.wooden_hoe,
-                        Items.stone_hoe,
-                        Items.iron_hoe,
-                        Items.golden_hoe,
-                        Items.diamond_hoe,
-                        Items.wooden_axe,
-                        Items.stone_axe,
-                        Items.iron_axe,
-                        Items.golden_axe,
-                        Items.diamond_axe
-                ));
-
-                ArrayList<Block> farmBlocks = new ArrayList<>(Arrays.asList(
-                        Blocks.dirt,
-                        Blocks.farmland,
-                        Blocks.carpet,
-                        Blocks.glowstone,
-                        Blocks.sea_lantern
-                ));
-
-                if (tools.contains(item.getItem()) && farmBlocks.contains(block)) {
-                    event.setCanceled(true);
-                }
-
-            }
-        }
-
         if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR) {
+
+            if (ToggleCommand.petItemConfirmationToggled) {
+                String itemId = Utils.getSkyBlockItemID(item);
+                if (itemId != null ) {
+                    if (itemId.startsWith("PET_ITEM")) {
+                        if (petItemLastAttempted == null) {
+                            petItemLastAttempted = item;
+                            timeOfLastPetItemAttempt = System.currentTimeMillis();
+                            petItemAttemptsRequired = 2;
+                            mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + String.format("Danker's Skyblock Mod stopped you from using that pet item! Click %s more %s to apply!", petItemAttemptsRequired, petItemAttemptsRequired > 1 ? "times": "time")));
+                            event.setCanceled(true);
+                            return;
+                        } else {
+                            if (System.currentTimeMillis() - timeOfLastPetItemAttempt > 5000 || !ItemStack.areItemStacksEqual(item, petItemLastAttempted)) {
+                                petItemLastAttempted = item;
+                                timeOfLastPetItemAttempt = System.currentTimeMillis();
+                                petItemAttemptsRequired = 2;
+                                mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + String.format("Danker's Skyblock Mod stopped you from using that pet item! Click %s more %s to apply!", petItemAttemptsRequired, petItemAttemptsRequired > 1 ? "times": "time")));
+                                event.setCanceled(true);
+                                return;
+                            } else {
+                                petItemAttemptsRequired--;
+                                if (petItemAttemptsRequired > 0) {
+                                    timeOfLastPetItemAttempt = System.currentTimeMillis();
+                                    mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + String.format("Danker's Skyblock Mod stopped you from using that pet item! Click %s more %s to apply!", petItemAttemptsRequired, petItemAttemptsRequired > 1 ? "times": "time")));
+                                    event.setCanceled(true);
+                                    return;
+                                } else {
+                                    petItemLastAttempted = null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (ToggleCommand.aotdToggled && item.getDisplayName().contains("Aspect of the Dragons")) {
                 event.setCanceled(true);
             }
@@ -3140,10 +3632,15 @@ public class DankersSkyblockMod {
                     }
                 }
             }
+
+            if (ToggleCommand.zombieSwordToggled && item.getDisplayName().contains("Zombie Sword") && player.getHealth() >= player.getMaxHealth()) {
+                event.setCanceled(true);
+            }
+
         }
 
         if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
-            Block block = Minecraft.getMinecraft().theWorld.getBlockState(event.pos).getBlock();
+            Block block = event.world.getBlockState(event.pos).getBlock();
 
             ArrayList<Block> interactables = new ArrayList<>(Arrays.asList(
                     Blocks.acacia_door,
@@ -3190,6 +3687,49 @@ public class DankersSkyblockMod {
             if (Utils.inDungeons) {
                 interactables.add(Blocks.coal_block);
                 interactables.add(Blocks.stained_hardened_clay);
+
+                if (ToggleCommand.threeManToggled && block == Blocks.chest) {
+                    if (riddleNPC == null) {
+                        EntityArmorStand clickLabel = event.world.getEntities(EntityArmorStand.class, (entity -> {
+                            if (entity == null) return false;
+                            if (!entity.hasCustomName()) return false;
+                            return entity.getCustomNameTag().contains("CLICK");
+                        })).stream().findFirst().orElse(null);
+
+                        if (clickLabel != null) {
+                            if (clickLabel.getDistanceSq(event.pos) <= 5) {
+                                System.out.println("Chest was too close to NPC; Chest Pos: " + event.pos.getX() + ", " + event.pos.getY() + ", " + event.pos.getZ() + " NPC Pos: " + clickLabel.posX + ", " + clickLabel.posY + ", " + clickLabel.posZ);
+                                event.setCanceled(true);
+                            }
+                        }
+                    } else {
+                        if (riddleChest == null) {
+                            EntityArmorStand riddleLabel = event.world.getEntities(EntityArmorStand.class, (entity -> {
+                                if (entity == null) return false;
+                                if (!entity.hasCustomName()) return false;
+                                return entity.getCustomNameTag().contains(riddleNPC);
+                            })).stream().findFirst().orElse(null);
+
+                            if (riddleLabel != null) {
+                                System.out.println("Found Riddle NPC " + riddleLabel.getCustomNameTag() + " at " + riddleLabel.posX + ", " + riddleLabel.posY + ", " + riddleLabel.posY);
+                                BlockPos actualPos = new BlockPos(Math.floor(riddleLabel.posX), 69, Math.floor(riddleLabel.posZ));
+                                if (actualPos.distanceSq(event.pos) > 1) {
+                                    System.out.println("Wrong chest clicked, position: " + event.pos.getX() + ", " + event.pos.getY() + ", " + event.pos.getZ());
+                                    if (!(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))) {
+                                        event.setCanceled(true);
+                                    }
+                                }
+                            }
+                        } else {
+                            if (!riddleChest.equals(event.pos)) {
+                                System.out.println("Wrong chest clicked, position: " + event.pos.getX() + ", " + event.pos.getY() + ", " + event.pos.getZ());
+                                if (!(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL))) {
+                                    event.setCanceled(true);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             if (flowerPlaceable.contains(block)) {
                 if (ToggleCommand.flowerWeaponsToggled && item.getDisplayName().contains("Flower of Truth")) {
@@ -3206,13 +3746,16 @@ public class DankersSkyblockMod {
                 if (ToggleCommand.lividDaggerToggled && item.getDisplayName().contains("Livid Dagger")) {
                     event.setCanceled(true);
                 }
+                if (ToggleCommand.zombieSwordToggled && item.getDisplayName().contains("Zombie Sword") && player.getHealth() >= player.getMaxHealth()) {
+                    event.setCanceled(true);
+                }
             }
         }
     }
 
     @SubscribeEvent
     public void onArrowNock(ArrowNockEvent event) {
-        if (!Utils.inSkyblock || Minecraft.getMinecraft().thePlayer != event.entityPlayer) return;
+        if (!Utils.inSkyblock || mc.thePlayer != event.entityPlayer) return;
 
         if (ToggleCommand.notifySlayerSlainToggled) {
             if (ScoreboardHandler.getSidebarLines().stream().anyMatch(x -> ScoreboardHandler.cleanSB(x).contains("Boss slain!"))) {
@@ -3227,7 +3770,26 @@ public class DankersSkyblockMod {
     }
 
     @SubscribeEvent
+    public void onArrowLoose(ArrowLooseEvent event) {
+        if (Utils.inDungeons) {
+            if (event.entity.equals(mc.thePlayer)) {
+                if (!shotArrowNearBlaze) {
+                    for (Entity e : mc.theWorld.loadedEntityList) {
+                        if (e instanceof EntityBlaze) {
+                            if (e.getDistanceToEntity(mc.thePlayer) <= 10) {
+                                shotArrowNearBlaze = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
     public void onAttackingEntity(AttackEntityEvent event) {
+        if (event.entity != mc.thePlayer) return;
+
         if (ToggleCommand.notifySlayerSlainToggled && (event.target instanceof EntityZombie || event.target instanceof EntitySpider || event.target instanceof EntityWolf)) {
             List<String> scoreboard = ScoreboardHandler.getSidebarLines();
 
@@ -3243,7 +3805,6 @@ public class DankersSkyblockMod {
 
     @SubscribeEvent
     public void onEntityInteract(EntityInteractEvent event) {
-        Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer != event.entityPlayer) return;
 
         if (ToggleCommand.itemFrameOnSeaLanternsToggled && Utils.inDungeons && event.target instanceof EntityItemFrame) {
@@ -3255,31 +3816,15 @@ public class DankersSkyblockMod {
                 event.setCanceled(true);
             }
         }
-    }
 
-    @SubscribeEvent
-    public void onKey(KeyInputEvent event) {
-        if (!Utils.inSkyblock) return;
-
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        if (keyBindings[0].isPressed()) {
-            player.sendChatMessage(lastMaddoxCommand);
-        }
-        if (keyBindings[1].isPressed()) {
-            if (Utils.inDungeons) {
-                player.dropOneItem(true);
-            }
-        }
-        if (keyBindings[2].isPressed()) {
-            if (skillStopwatch.isStarted() && skillStopwatch.isSuspended()) {
-                skillStopwatch.resume();
-                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker started."));
-            } else if (!skillStopwatch.isStarted()) {
-                skillStopwatch.start();
-                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker started."));
-            } else if (skillStopwatch.isStarted() && !skillStopwatch.isSuspended()) {
-                skillStopwatch.suspend();
-                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker paused."));
+        if (ToggleCommand.oruoToggled && triviaAnswer != null) {
+            if (event.entity instanceof EntityArmorStand && event.entity.hasCustomName()) {
+                String name = event.entity.getCustomNameTag();
+                if (name.contains("ⓐ") || name.contains("ⓑ") || name.contains("ⓒ")) {
+                    if (!name.contains(triviaAnswer)) {
+                        event.setCanceled(true);
+                    }
+                }
             }
         }
     }
@@ -3297,10 +3842,53 @@ public class DankersSkyblockMod {
                 // a lot of declarations here, if you get scarred, my bad
                 GuiChest chest = (GuiChest) event.gui;
                 IInventory inventory = ((ContainerChest) containerChest).getLowerChestInventory();
-                Slot mouseSlot = chest.getSlotUnderMouse();
+                Slot mouseSlot = Utils.getSlotUnderMouse(chest);
                 if (mouseSlot == null) return;
                 ItemStack item = mouseSlot.getStack();
                 String inventoryName = inventory.getDisplayName().getUnformattedText();
+
+                if (ToggleCommand.blockCollectingUnenchantedToggled && inventoryName.contains("Minion") && item != null) {
+                    if (!item.isItemEnchanted()) {
+                        if (inventoryName.equals("Minion Chest")) {
+                            boolean chestHasEnchantedItem = false;
+                            for (int i = 0; i < inventory.getSizeInventory(); i++) {
+                                ItemStack stack = inventory.getStackInSlot(i);
+                                if (stack == null) continue;
+                                if (stack.isItemEnchanted()) {
+                                    chestHasEnchantedItem = true;
+                                    break;
+                                }
+                            }
+                            if (chestHasEnchantedItem) {
+                                event.setCanceled(true);
+                                return;
+                            }
+                        } else {
+                            ItemStack minionType = inventory.getStackInSlot(4);
+                            if (minionType != null) {
+                                if (StringUtils.stripControlCodes(minionType.getDisplayName()).contains("Minion")) {
+                                    int index = mouseSlot.getSlotIndex();
+                                    if (index >= 21 && index <= 43 && index % 9 >= 3 && index % 9 <= 7) {
+                                        ItemStack firstUpgrade = inventory.getStackInSlot(37);
+                                        ItemStack secondUpgrade = inventory.getStackInSlot(46);
+                                        if (firstUpgrade != null) {
+                                            if (StringUtils.stripControlCodes(firstUpgrade.getDisplayName()).contains("Super Compactor 3000")) {
+                                                event.setCanceled(true);
+                                                return;
+                                            }
+                                        }
+                                        if (secondUpgrade != null) {
+                                            if (StringUtils.stripControlCodes(secondUpgrade.getDisplayName()).contains("Super Compactor 3000")) {
+                                                event.setCanceled(true);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if (ToggleCommand.stopSalvageStarredToggled && inventoryName.startsWith("Salvage")) {
                     if (item == null) return;
@@ -3312,60 +3900,10 @@ public class DankersSkyblockMod {
                         inSalvageGui = true;
                     }
                     if (item.getDisplayName().contains("✪") && (mouseSlot.slotNumber > 53 || inSalvageGui)) {
-                        Minecraft.getMinecraft().thePlayer.playSound("note.bass", 1, 0.5f);
-                        Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from salvaging that item!"));
+                        mc.thePlayer.playSound("note.bass", 1, 0.5f);
+                        mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from salvaging that item!"));
                         event.setCanceled(true);
                         return;
-                    }
-                }
-
-                if (inventoryName.endsWith(" Chest") && item != null && item.getDisplayName().contains("Open Reward Chest")) {
-                    List<String> tooltip = item.getTooltip(Minecraft.getMinecraft().thePlayer, Minecraft.getMinecraft().gameSettings.advancedItemTooltips);
-                    for (String lineUnclean : tooltip) {
-                        String line = StringUtils.stripControlCodes(lineUnclean);
-                        if (line.contains("FREE")) {
-                            break;
-                        } else if (line.contains(" Coins")) {
-                            int coinsSpent = Integer.parseInt(line.substring(0, line.indexOf(" ")).replaceAll(",", ""));
-
-                            List<String> scoreboard = ScoreboardHandler.getSidebarLines();
-                            for (String s : scoreboard) {
-                                String sCleaned = ScoreboardHandler.cleanSB(s);
-                                if (sCleaned.contains("The Catacombs (")) {
-                                    if (sCleaned.contains("F1")) {
-                                        LootCommand.f1CoinsSpent += coinsSpent;
-                                        LootCommand.f1CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorOneCoins", LootCommand.f1CoinsSpent);
-                                    } else if (sCleaned.contains("F2")) {
-                                        LootCommand.f2CoinsSpent += coinsSpent;
-                                        LootCommand.f2CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorTwoCoins", LootCommand.f2CoinsSpent);
-                                    } else if (sCleaned.contains("F3")) {
-                                        LootCommand.f3CoinsSpent += coinsSpent;
-                                        LootCommand.f3CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorThreeCoins", LootCommand.f3CoinsSpent);
-                                    } else if (sCleaned.contains("F4")) {
-                                        LootCommand.f4CoinsSpent += coinsSpent;
-                                        LootCommand.f4CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorFourCoins", LootCommand.f4CoinsSpent);
-                                    } else if (sCleaned.contains("F5")) {
-                                        LootCommand.f5CoinsSpent += coinsSpent;
-                                        LootCommand.f5CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorFiveCoins", LootCommand.f5CoinsSpent);
-                                    } else if (sCleaned.contains("F6")) {
-                                        LootCommand.f6CoinsSpent += coinsSpent;
-                                        LootCommand.f6CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorSixCoins", LootCommand.f6CoinsSpent);
-                                    } else if (sCleaned.contains("F7")) {
-                                        LootCommand.f7CoinsSpent += coinsSpent;
-                                        LootCommand.f7CoinsSpentSession += coinsSpent;
-                                        ConfigHandler.writeDoubleConfig("catacombs", "floorSevenCoins", LootCommand.f7CoinsSpent);
-                                    }
-                                    break;
-                                }
-                            }
-                            break;
-                        }
                     }
                 }
 
@@ -3410,8 +3948,6 @@ public class DankersSkyblockMod {
                     boolean shouldCancel = false;
 
                     if (item == null) return;
-
-                    //most of these are extra but who cares
 
                     switch (inventoryName) {
                         case "Correct all the panes!":
@@ -3480,13 +4016,63 @@ public class DankersSkyblockMod {
                             char letter = inventoryName.charAt(inventoryName.indexOf("'") + 1);
                             shouldCancel = !(StringUtils.stripControlCodes(item.getDisplayName()).charAt(0) == letter);
                         } else if (inventoryName.startsWith("Select all the")) {
-                            if (terminalColorNeeded == null) return;
+                            if (terminalColourNeeded == null) return;
                             String itemName = StringUtils.stripControlCodes(item.getDisplayName()).toUpperCase();
-                            shouldCancel = !(itemName.contains(terminalColorNeeded) || (terminalColorNeeded.equals("SILVER") && itemName.contains("LIGHT GRAY")) || (terminalColorNeeded.equals("WHITE") && itemName.equals("WOOL")));
+                            shouldCancel = !(itemName.contains(terminalColourNeeded) || (terminalColourNeeded.equals("SILVER") && itemName.contains("LIGHT GRAY")) || (terminalColourNeeded.equals("WHITE") && itemName.equals("WOOL")));
                         }
                     }
 
                     event.setCanceled(shouldCancel && !Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && !Keyboard.isKeyDown(Keyboard.KEY_RCONTROL));
+                }
+
+                if (inventoryName.endsWith(" Chest") && item != null && item.getDisplayName().contains("Open Reward Chest")) {
+                    List<String> tooltip = item.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
+                    for (String lineUnclean : tooltip) {
+                        String line = StringUtils.stripControlCodes(lineUnclean);
+                        if (line.contains("FREE")) {
+                            break;
+                        } else if (line.contains(" Coins")) {
+                            int coinsSpent = Integer.parseInt(line.substring(0, line.indexOf(" ")).replaceAll(",", ""));
+
+                            List<String> scoreboard = ScoreboardHandler.getSidebarLines();
+                            for (String s : scoreboard) {
+                                String sCleaned = ScoreboardHandler.cleanSB(s);
+                                if (sCleaned.contains("The Catacombs (")) {
+                                    if (sCleaned.contains("F1")) {
+                                        LootCommand.f1CoinsSpent += coinsSpent;
+                                        LootCommand.f1CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorOneCoins", LootCommand.f1CoinsSpent);
+                                    } else if (sCleaned.contains("F2")) {
+                                        LootCommand.f2CoinsSpent += coinsSpent;
+                                        LootCommand.f2CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorTwoCoins", LootCommand.f2CoinsSpent);
+                                    } else if (sCleaned.contains("F3")) {
+                                        LootCommand.f3CoinsSpent += coinsSpent;
+                                        LootCommand.f3CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorThreeCoins", LootCommand.f3CoinsSpent);
+                                    } else if (sCleaned.contains("F4")) {
+                                        LootCommand.f4CoinsSpent += coinsSpent;
+                                        LootCommand.f4CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorFourCoins", LootCommand.f4CoinsSpent);
+                                    } else if (sCleaned.contains("F5")) {
+                                        LootCommand.f5CoinsSpent += coinsSpent;
+                                        LootCommand.f5CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorFiveCoins", LootCommand.f5CoinsSpent);
+                                    } else if (sCleaned.contains("F6")) {
+                                        LootCommand.f6CoinsSpent += coinsSpent;
+                                        LootCommand.f6CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorSixCoins", LootCommand.f6CoinsSpent);
+                                    } else if (sCleaned.contains("F7")) {
+                                        LootCommand.f7CoinsSpent += coinsSpent;
+                                        LootCommand.f7CoinsSpentSession += coinsSpent;
+                                        ConfigHandler.writeDoubleConfig("catacombs", "floorSevenCoins", LootCommand.f7CoinsSpent);
+                                    }
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
                 }
 
                 if (!BlockSlayerCommand.onlySlayerName.equals("") && item != null) {
@@ -3494,8 +4080,8 @@ public class DankersSkyblockMod {
                         if (!item.getDisplayName().contains("Revenant Horror") && !item.getDisplayName().contains("Tarantula Broodfather") && !item.getDisplayName().contains("Sven Packmaster"))
                             return;
                         if (!item.getDisplayName().contains(BlockSlayerCommand.onlySlayerName)) {
-                            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from starting this quest (Set to " + BlockSlayerCommand.onlySlayerName + " " + BlockSlayerCommand.onlySlayerNumber + ")"));
-                            Minecraft.getMinecraft().thePlayer.playSound("note.bass", 1, (float) 0.5);
+                            mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from starting this quest (Set to " + BlockSlayerCommand.onlySlayerName + " " + BlockSlayerCommand.onlySlayerNumber + ")"));
+                            mc.thePlayer.playSound("note.bass", 1, (float) 0.5);
                             event.setCanceled(true);
                         }
                     } else if (inventoryName.equals("Revenant Horror") || inventoryName.equals("Tarantula Broodfather") || inventoryName.equals("Sven Packmaster")) {
@@ -3503,8 +4089,8 @@ public class DankersSkyblockMod {
                             // Only check number as they passed the above check
                             String slayerNumber = item.getDisplayName().substring(item.getDisplayName().lastIndexOf(" ") + 1);
                             if (!slayerNumber.equals(BlockSlayerCommand.onlySlayerNumber)) {
-                                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from starting this quest (Set to " + BlockSlayerCommand.onlySlayerName + " " + BlockSlayerCommand.onlySlayerNumber + ")"));
-                                Minecraft.getMinecraft().thePlayer.playSound("note.bass", 1, (float) 0.5);
+                                mc.thePlayer.addChatMessage(new ChatComponentText(ERROR_COLOUR + "Danker's Skyblock Mod has stopped you from starting this quest (Set to " + BlockSlayerCommand.onlySlayerName + " " + BlockSlayerCommand.onlySlayerNumber + ")"));
+                                mc.thePlayer.playSound("note.bass", 1, (float) 0.5);
                                 event.setCanceled(true);
                             }
                         }
@@ -3519,15 +4105,15 @@ public class DankersSkyblockMod {
         if (!Utils.inSkyblock) return;
         if (Mouse.getEventButton() == 0 && event.gui instanceof GuiChat) {
             if (ToggleCommand.chatMaddoxToggled && System.currentTimeMillis() / 1000 - lastMaddoxTime < 10) {
-                Minecraft.getMinecraft().thePlayer.sendChatMessage(lastMaddoxCommand);
+                mc.thePlayer.sendChatMessage(lastMaddoxCommand);
             }
         }
     }
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
-        Minecraft mc = Minecraft.getMinecraft();
         GameSettings gameSettings = mc.gameSettings;
+
         if (event.gui instanceof GuiChest) {
             Container containerChest = ((GuiChest) event.gui).inventorySlots;
             if (containerChest instanceof ContainerChest) {
@@ -3631,7 +4217,7 @@ public class DankersSkyblockMod {
         chronomatronPattern.clear();
         chronomatronMouseClicks = 0;
         experimentTableSlots = new ItemStack[54];
-        terminalColorNeeded = null;
+        terminalColourNeeded = null;
         terminalNumberNeeded = new int[4];
     }
 
@@ -3642,7 +4228,6 @@ public class DankersSkyblockMod {
             GuiChest inventory = (GuiChest) event.gui;
             Container containerChest = inventory.inventorySlots;
             if (containerChest instanceof ContainerChest) {
-                Minecraft mc = Minecraft.getMinecraft();
                 ScaledResolution sr = new ScaledResolution(mc);
                 int guiLeft = (sr.getScaledWidth() - 176) / 2;
                 int guiTop = (sr.getScaledHeight() - 222) / 2;
@@ -3692,7 +4277,7 @@ public class DankersSkyblockMod {
                 if (ToggleCommand.startsWithToggled && Utils.inDungeons && displayName.startsWith("What starts with:")) {
                     char letter = displayName.charAt(displayName.indexOf("'") + 1);
                     for (Slot slot : invSlots) {
-                        if (slot.getSlotIndex() > 53) continue;
+                        if (slot.inventory == mc.thePlayer.inventory) continue;
                         ItemStack item = slot.getStack();
                         if (item == null) continue;
                         if (item.isItemEnchanted()) continue;
@@ -3710,10 +4295,10 @@ public class DankersSkyblockMod {
                         colourParts.add(colourMatcher.group());
                     }
                     colour = String.join(" ", colourParts);
-                    terminalColorNeeded = colour;
+                    terminalColourNeeded = colour;
 
                     for (Slot slot : invSlots) {
-                        if (slot.getSlotIndex() > 53) continue;
+                        if (slot.inventory == mc.thePlayer.inventory) continue;
                         ItemStack item = slot.getStack();
                         if (item == null) continue;
                         if (item.isItemEnchanted()) continue;
@@ -3857,9 +4442,141 @@ public class DankersSkyblockMod {
     }
 
     @SubscribeEvent
-    public void onServerConnect(ClientConnectedToServerEvent event) {
-        event.manager.channel().pipeline().addBefore("packet_handler", "danker_packet_handler", new PacketHandler());
-        System.out.println("Added packet handler to channel pipeline.");
+    public void onGuiDrawPost(GuiScreenEvent.DrawScreenEvent.Post event) {
+        if (!Utils.inSkyblock) return;
+        if (event.gui instanceof GuiChest) {
+            GuiChest inventory = (GuiChest) event.gui;
+            Container containerChest = inventory.inventorySlots;
+            if (containerChest instanceof ContainerChest) {
+                ScaledResolution sr = new ScaledResolution(mc);
+                FontRenderer fr = mc.fontRendererObj;
+                int guiLeft = (sr.getScaledWidth() - 176) / 2;
+                int guiTop = (sr.getScaledHeight() - 222) / 2;
+
+                List<Slot> invSlots = inventory.inventorySlots.inventorySlots;
+                String displayName = ((ContainerChest) containerChest).getLowerChestInventory().getDisplayName().getUnformattedText().trim();
+                int chestSize = inventory.inventorySlots.inventorySlots.size();
+
+                if (ToggleCommand.spiritLeapNamesToggled && Utils.inDungeons && displayName.equals("Spirit Leap")) {
+                    int people = 0;
+                    for (Slot slot : invSlots) {
+                        if (slot.inventory == mc.thePlayer.inventory) continue;
+                        if (slot.getHasStack()) {
+                            ItemStack item = slot.getStack();
+                            if (item.getItem() == Items.skull) {
+                                people++;
+                                String name = item.getDisplayName();
+
+                                //slot is 16x16
+                                int x = guiLeft + slot.xDisplayPosition + 8;
+                                int y = guiTop + slot.yDisplayPosition;
+                                // Move down when chest isn't 6 rows
+                                if (chestSize != 90) y += (6 - (chestSize - 36) / 9) * 9;
+
+                                if (people % 2 != 0) {
+                                    y -= 15;
+                                } else {
+                                    y += 20;
+                                }
+
+                                String text = fr.trimStringToWidth(name, 32);
+                                x -= fr.getStringWidth(text) / 2;
+
+                                boolean shouldDrawBkg = true;
+                                if (Loader.isModLoaded("notenoughupdates")) {
+                                    try {
+                                        Class<?> neuClass = Class.forName("io.github.moulberry.notenoughupdates.NotEnoughUpdates");
+                                        Field neuInstance = neuClass.getDeclaredField("INSTANCE");
+                                        Object neu = neuInstance.get(null);
+                                        Field neuConfig = neuClass.getDeclaredField("config");
+                                        Object config = neuConfig.get(neu);
+                                        Field improvedSBMenu = config.getClass().getDeclaredField("improvedSBMenu");
+                                        Object improvedSBMenuS = improvedSBMenu.get(config);
+                                        Field enableSbMenus = improvedSBMenuS.getClass().getDeclaredField("enableSbMenus");
+                                        boolean customGuiEnabled = enableSbMenus.getBoolean(improvedSBMenuS);
+                                        if (customGuiEnabled) shouldDrawBkg = false;
+                                    } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException ignored) {
+                                    }
+                                }
+
+                                GL11.glPushMatrix();
+                                GL11.glTranslated(0, 0, 10);
+                                if (shouldDrawBkg) Gui.drawRect(x - 2, y - 2, x + fr.getStringWidth(text) + 2, y + fr.FONT_HEIGHT + 2, new Color(47, 40, 40).getRGB());
+                                fr.drawStringWithShadow(text, x, y, new Color(255, 0, 0).getRGB());
+                                GL11.glTranslated(0, 0, -10);
+                                GL11.glPopMatrix();
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    public boolean isKeyBindActive(KeyBinding bind) {
+        if (bind.isPressed()) return true;
+        if (Mouse.isButtonDown(bind.getKeyCode() + 100)) return true;
+        return false;
+    }
+
+    public void checkKeyBindings() {
+        EntityPlayerSP player = mc.thePlayer;
+        if (mc.thePlayer == null || mc.theWorld == null) return;
+        if (isKeyBindActive(keyBindings[0])) {
+            player.sendChatMessage(lastMaddoxCommand);
+        }
+        if (isKeyBindActive(keyBindings[1])) {
+            if (Utils.inDungeons) {
+                player.dropOneItem(true);
+            }
+        }
+        if (isKeyBindActive(keyBindings[2])) {
+            if (skillStopwatch.isStarted() && skillStopwatch.isSuspended()) {
+                skillStopwatch.resume();
+                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker started."));
+            } else if (!skillStopwatch.isStarted()) {
+                skillStopwatch.start();
+                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker started."));
+            } else if (skillStopwatch.isStarted() && !skillStopwatch.isSuspended()) {
+                skillStopwatch.suspend();
+                player.addChatMessage(new ChatComponentText(MAIN_COLOUR + "Skill tracker paused."));
+            }
+        }
+        if (isKeyBindActive(keyBindings[3])) {
+            if (mc.currentScreen == null) {
+
+                ItemStack held = player.getCurrentEquippedItem();
+
+                boolean shouldSwap = true;
+                if (held != null) {
+                    shouldSwap = !(held.getDisplayName().contains("Bonemerang") && held.getItem() == Items.bone);
+                }
+
+                if (shouldSwap) {
+                    int slot = -1;
+
+                    for (int i = 0; i <= 8; i++) {
+                        if (i == player.inventory.currentItem) continue;
+                        ItemStack item = player.inventory.getStackInSlot(i);
+                        if (item != null) {
+                            String itemName = item.getDisplayName();
+
+                            if (itemName.contains("Bonemerang") && item.getItem() == Items.bone) {
+                                slot = i;
+                                break;
+                            }
+
+                        }
+                    }
+
+                    if (slot != -1) {
+                        player.inventory.currentItem = slot;
+                    }
+                }
+            }
+        }
     }
 
     public void increaseSeaCreatures() {

@@ -28,7 +28,7 @@ public class EditLocationsGui extends GuiScreen {
 	private LocationButton waterAnswer;
 	private LocationButton bonzoTimer;
 	private LocationButton chestProfit;
-	
+
 	@Override
 	public boolean doesGuiPauseGame() {
 		return false;
@@ -100,7 +100,7 @@ public class EditLocationsGui extends GuiScreen {
 		cakeTimer = new LocationButton(0, MoveCommand.cakeTimerXY[0], MoveCommand.cakeTimerXY[1] + 5, 85 * ScaleCommand.cakeTimerScale, 18 * ScaleCommand.cakeTimerScale, ScaleCommand.cakeTimerScale, DankersSkyblockMod.CAKE_COLOUR + "     11h16m", null, null);
 		skillTracker = new LocationButton(0, MoveCommand.skillTrackerXY[0], MoveCommand.skillTrackerXY[1], 150 * ScaleCommand.skillTrackerScale, 28 * ScaleCommand.skillTrackerScale, ScaleCommand.skillTrackerScale, skillTrackerText, null, null);
 		waterAnswer = new LocationButton(0, MoveCommand.waterAnswerXY[0], MoveCommand.waterAnswerXY[1], 190 * ScaleCommand.waterAnswerScale, 54 * ScaleCommand.waterAnswerScale, ScaleCommand.waterAnswerScale, waterAnswerText, null, null);
-		bonzoTimer = new LocationButton(0, MoveCommand.bonzoTimerXY[0], MoveCommand.bonzoTimerXY[1] + 5, 85 * ScaleCommand.bonzoTimerScale, 18 * ScaleCommand.bonzoTimerScale, ScaleCommand.bonzoTimerScale, DankersSkyblockMod.BONZO_COLOR + "     3m30s", null, null);
+		bonzoTimer = new LocationButton(0, MoveCommand.bonzoTimerXY[0], MoveCommand.bonzoTimerXY[1] + 5, 85 * ScaleCommand.bonzoTimerScale, 18 * ScaleCommand.bonzoTimerScale, ScaleCommand.bonzoTimerScale, DankersSkyblockMod.BONZO_COLOUR + "     3m30s", null, null);
 		chestProfit = new LocationButton(0, MoveCommand.chestProfitXY[0], MoveCommand.chestProfitXY[1], 190 * ScaleCommand.chestProfitScale, 54 * ScaleCommand.chestProfitScale, ScaleCommand.chestProfitScale, chestProfitText, null, null);
 
 		this.buttonList.add(coords);

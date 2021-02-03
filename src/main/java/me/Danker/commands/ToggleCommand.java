@@ -25,6 +25,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	public static boolean lividDaggerToggled;
 	public static boolean petColoursToggled;
 	public static boolean dungeonTimerToggled;
+	public static boolean chestProfitToggled;
 	public static boolean golemAlertToggled;
 	public static boolean expertiseLoreToggled;
 	public static boolean skill50DisplayToggled;
@@ -95,7 +96,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 	@Override
 	public String getCommandUsage(ICommandSender arg0) {
 		return "/" + getCommandName() + " <gparty/coords/golden/slayercount/rngesusalerts/splitfishing/chatmaddox/spiritbearalert/" + 
-										  "aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/golemalerts/expertiselore/skill50display/" +
+										  "aotd/lividdagger/flowerweapons/sceptremessages/petcolors/dungeontimer/chestprofit/golemalerts/expertiselore/skill50display/" +
 										  "outlinetext/midasstaffmessages/implosionmessages/healmessages/cooldownmessages/manamessages/caketimer/lowhealthnotify/" +
 										  "lividsolver/stopsalvagestarred/notifyslayerslain/necronnotifications/bonzotimer/blockbreakingfarms/autoskilltracker/bossbarfix/hideimplosionparticles/zombiesword/autoacceptreparty/hiddenjerryalert/blockcollectingunenchanted/burrowwaypoints/petitemconfirmation/spiritleapnames/souleaterlore/puzzler/fetchur/monolithwaypoints/threemanpuzzle/oruopuzzle/blazepuzzle/onlyshowcorrectblaze/creeperpuzzle/waterpuzzle/tictactoepuzzle/" +
 										  "watchermessage/startswithterminal/selectallterminal/clickinorderterminal/simonsays/blockwrongterminalclicks/" +
@@ -112,7 +113,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 		if (args.length == 1) {
 			return getListOfStringsMatchingLastWord(args, "gparty", "coords", "golden", "slayercount", "rngesusalerts",
 														  "splitfishing", "chatmaddox", "spiritbearalerts", "aotd", "lividdagger",
-														  "flowerweapons", "sceptremessages", "petcolors", "dungeontimer", "golemalerts",
+														  "flowerweapons", "sceptremessages", "petcolors", "dungeontimer", "chestprofit", "golemalerts",
 														  "expertiselore", "skill50display", "outlinetext", "midasstaffmessages",
 														  "implosionmessages", "healmessages", "cooldownmessages", "manamessages", "caketimer", "lowhealthnotify",
 														  "lividsolver", "stopsalvagestarred", "notifyslayerslain", "necronnotifications",
@@ -229,6 +230,11 @@ public class ToggleCommand extends CommandBase implements ICommand {
 				dungeonTimerToggled = !dungeonTimerToggled;
 				ConfigHandler.writeBooleanConfig("toggles", "DungeonTimer", dungeonTimerToggled);
 				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Dungeon timer has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + dungeonTimerToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
+				break;
+			case "chestprofit":
+				chestProfitToggled = !chestProfitToggled;
+				ConfigHandler.writeBooleanConfig("toggles", "ChestProfit", chestProfitToggled);
+				player.addChatMessage(new ChatComponentText(DankersSkyblockMod.MAIN_COLOUR + "Dungeon chest profit has been set to " + DankersSkyblockMod.SECONDARY_COLOUR + chestProfitToggled + DankersSkyblockMod.MAIN_COLOUR + "."));
 				break;
 			case "golemalerts":
 				golemAlertToggled = !golemAlertToggled;
@@ -477,6 +483,7 @@ public class ToggleCommand extends CommandBase implements ICommand {
 															DankersSkyblockMod.TYPE_COLOUR + " Out of mana messages: " + DankersSkyblockMod.VALUE_COLOUR + manaMessages + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Pet colours: " + DankersSkyblockMod.VALUE_COLOUR + petColoursToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Dungeon timer: " + DankersSkyblockMod.VALUE_COLOUR + dungeonTimerToggled + "\n" +
+															DankersSkyblockMod.TYPE_COLOUR + " Dungeon chest profit: " + DankersSkyblockMod.VALUE_COLOUR + chestProfitToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Golem spawn alerts: " + DankersSkyblockMod.VALUE_COLOUR + golemAlertToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Expertise in lore: " + DankersSkyblockMod.VALUE_COLOUR + expertiseLoreToggled + "\n" +
 															DankersSkyblockMod.TYPE_COLOUR + " Skill 50 display: " + DankersSkyblockMod.VALUE_COLOUR + skill50DisplayToggled + "\n" +
